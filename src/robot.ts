@@ -1,15 +1,18 @@
 import type { TrustedEvent } from '@welshman/util'
 import { MESSAGE, makeEvent } from '@welshman/util'
 import { request, publish } from '@welshman/net'
-import * as actions from './actions.js'
-import * as db from './database.js'
+import { actions } from './actions.js'
+import { database } from './database.js'
 import { ADMIN_RELAY, ADMIN_ROOM, appSigner } from './env.js'
 
 const commands = {
+  '/help': async (event: TrustedEvent) => {
+    robot.send(`\n- \`/help\` - display this message\n- \`/approve [id] [optional message]\` - approve an application\n- \`/reject [id] [optional message]\` - reject an application\n- \`/info [id]\` - displays information for the given application`)
+  },
   '/approve': async (event: TrustedEvent) => {
     const [_, id, message] = event.content.match(/\/approve (\w+) ?(.*)/) || []
 
-    const application = await db.getApplication(id)
+    const application = await database.getApplication(id)
 
     if (application) {
       await actions.approveApplication({ id, message })
@@ -22,12 +25,23 @@ const commands = {
   '/reject': async (event: TrustedEvent) => {
     const [_, id, message] = event.content.match(/\/reject (\w+) ?(.*)/) || []
 
-    const application = await db.getApplication(id)
+    const application = await database.getApplication(id)
 
     if (application) {
       await actions.rejectApplication({ id, message })
 
       robot.send(`Successfully rejected application ${id}`)
+    } else {
+      robot.send(`Invalid application id: ${id}`)
+    }
+  },
+  '/info': async (event: TrustedEvent) => {
+    const [_, id] = event.content.match(/\/info (\w+)/) || []
+
+    const application = await database.getApplication(id)
+
+    if (application) {
+      robot.send("```" + Object.entries(application).map(([k, v]) => `${k}: ${v}`).join('\n') + "```")
     } else {
       robot.send(`Invalid application id: ${id}`)
     }

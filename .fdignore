@@ -1,3 +1,4 @@
 node_modules
+databse.db
 package-lock.json
 dist

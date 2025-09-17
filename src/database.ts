@@ -68,7 +68,7 @@ const addColumnIfNotExists = async (tableName: string, columnName: string, colum
   }
 }
 
-export const migrate = () =>
+const migrate = () =>
   new Promise<void>(async (resolve, reject) => {
     try {
       db.serialize(async () => {
@@ -96,12 +96,12 @@ export const migrate = () =>
 
 // Applications
 
-export const getApplication = instrument(
+const getApplication = instrument(
   'database.getApplication',
   (id: string) => get<Application>(`SELECT * FROM application WHERE ID = ?`, [id])
 )
 
-export const createApplication = instrument(
+const createApplication = instrument(
   'database.createApplication',
   async ({ pubkey, city, pin }: ApplicationParams) => {
     return assertResult(
@@ -114,12 +114,12 @@ export const createApplication = instrument(
   }
 )
 
-export const approveApplication = instrument(
+const approveApplication = instrument(
   'database.approveApplication',
   async ({ id, message }: ApplicationApprovalParams) => {
     return assertResult(
       await get<Application>(
-        `UPDATE application SET approved_at = unixepoch(), approved_message = ?
+        `UPDATE application SET rejected_at = null, rejected_message = null, approved_at = unixepoch(), approved_message = ?
          WHERE id = ? RETURNING *`,
         [message, id]
       )
@@ -127,15 +127,23 @@ export const approveApplication = instrument(
   }
 )
 
-export const rejectApplication = instrument(
+const rejectApplication = instrument(
   'database.rejectApplication',
   async ({ id, message }: ApplicationRejectionParams) => {
     return assertResult(
       await get<Application>(
-        `UPDATE application SET rejected_at = unixepoch(), rejected_message = ?
+        `UPDATE application SET approved_at = null, approved_message = null, rejected_at = unixepoch(), rejected_message = ?
          WHERE id = ? RETURNING *`,
         [message, id]
       )
     )
   }
 )
+
+export const database = {
+  migrate,
+  getApplication,
+  createApplication,
+  approveApplication,
+  rejectApplication,
+}

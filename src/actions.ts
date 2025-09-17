@@ -1,10 +1,12 @@
+import * as nip19 from 'nostr-tools/nip19'
 import { instrument } from 'succinct-async'
 import type {
   ApplicationParams,
   ApplicationApprovalParams,
   ApplicationRejectionParams,
 } from './domain.js'
-import * as db from './database.js'
+import { database } from './database.js'
+import { robot} from './robot.js'
 
 export class ActionError extends Error {
   toString() {
@@ -12,21 +14,22 @@ export class ActionError extends Error {
   }
 }
 
-export const createApplication = instrument(
+const createApplication = instrument(
   'actions.createApplication',
   async (params: ApplicationParams) => {
-    const application = await db.createApplication(params)
+    const application = await database.createApplication(params)
+    const npub = nip19.npubEncode(application.pubkey)
 
-    // TODO: send message to admin using admin relays/room
+    robot.send(`New application (ID: ${application.id}) "${application.city}" from nostr:${npub}\n${application.pin}`)
 
     return application
   }
 )
 
-export const approveApplication = instrument(
+const approveApplication = instrument(
   'actions.approveApplication',
   async (params: ApplicationApprovalParams) => {
-    const application = await db.approveApplication(params)
+    const application = await database.approveApplication(params)
 
     // TODO:
     // - Set up DNS
@@ -38,10 +41,10 @@ export const approveApplication = instrument(
   }
 )
 
-export const rejectApplication = instrument(
+const rejectApplication = instrument(
   'actions.rejectApplication',
   async (params: ApplicationRejectionParams) => {
-    const application = await db.rejectApplication(params)
+    const application = await database.rejectApplication(params)
 
     // TODO:
     // - Notify organizer
@@ -49,3 +52,9 @@ export const rejectApplication = instrument(
     return application
   }
 )
+
+export const actions = {
+  createApplication,
+  approveApplication,
+  rejectApplication,
+}

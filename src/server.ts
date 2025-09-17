@@ -2,7 +2,7 @@ import { instrument } from 'succinct-async'
 import express, { Request, Response, NextFunction } from 'express'
 import rateLimit from 'express-rate-limit'
 import { render } from './templates.js'
-import * as actions from './actions.js'
+import { actions, ActionError } from './actions.js'
 import type { ApplicationParams } from './domain.js'
 
 // Endpoints
@@ -47,7 +47,7 @@ addRoute('post', '/application/create', async (req: Request, res: Response) => {
 
 server.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err) {
-    if (err instanceof actions.ActionError) {
+    if (err instanceof ActionError) {
       res.status(400).send({ error: err.message })
     } else {
       console.log('Unhandled error', err)
