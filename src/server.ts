@@ -9,7 +9,7 @@ import type { ApplicationParams } from './domain.js'
 
 export const server = express()
 
-server.use(express.json())
+server.use(express.urlencoded({ extended: true }))
 
 server.use(
   rateLimit({
@@ -39,6 +39,7 @@ addRoute('get', '/', async (req: Request, res: Response) => {
 })
 
 addRoute('post', '/application/create', async (req: Request, res: Response) => {
+  console.log(req.body)
   await actions.createApplication(req.body as ApplicationParams)
 
   res.send(await render('pages/signup-complete.html'))

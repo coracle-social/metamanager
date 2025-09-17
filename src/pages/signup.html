@@ -2,11 +2,13 @@
 <html>
   <head>
     <title>BitcoinWalk</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nonboard@1.0.2/dist/index.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nonboard@1.0.5/dist/index.css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
       :root {
-        --primary-color: #f7931a;
+        --nb-primary: #f7931a;
+        --nb-primary-alt: #ed8b15;
+        --nb-primary-content: #ffffff;
       }
     </style>
   </head>
@@ -41,36 +43,29 @@
                   Log in with Nostr
                 </button>
               </div>
-              <div id="userProfile" class="hidden flex items-center p-3 rounded-lg bg-[var(--primary-color)]">
-                <img id="userAvatar" class="w-10 h-10 rounded-full mr-3" src="" alt="User avatar">
+              <div id="userProfile" class="hidden flex items-center p-3 rounded-lg bg-[var(--nb-primary)]">
+                <img id="avatar" class="w-10 h-10 rounded-full mr-3" src="" alt="User avatar">
                 <div class="flex-1">
-                  <p id="username" class="text-sm font-medium text-gray-900"></p>
-                  <button type="button" id="changeUser" class="text-xs text-[#f7931a] hover:underline">Change account</button>
+                  <p class="text-sm opacity-75">Logged in as:</p>
+                  <p id="username" class="text-xl"></p>
                 </div>
               </div>
             </div>
-            <input type="hidden" id="nostrPubkey" name="nostrPubkey" required>
+            <input type="hidden" id="pubkey" name="pubkey" required>
           </div>
 
           <div>
-            <label for="meetupName" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="city" class="block text-sm font-medium text-gray-700 mb-2">
               Meetup Name (City)
             </label>
-            <input
-              type="text"
-              id="meetupName"
-              name="meetupName"
-              required
-              placeholder="e.g., San Francisco"
-              class="nb-input w-full"
-            >
+            <input type="text" id="city" name="city" required placeholder="e.g., San Francisco" class="nb-input w-full">
           </div>
 
           <div>
-            <label for="googleMapsLink" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="pin" class="block text-sm font-medium text-gray-700 mb-2">
               Google Maps Link
             </label>
-            <input type="url" id="googleMapsLink" name="googleMapsLink" required placeholder="https://maps.google.com/..." class="nb-input w-full">
+            <input type="url" id="pin" name="pin" required placeholder="https://maps.google.com/..." class="nb-input w-full">
             <p class="mt-1 text-xs text-gray-500">Paste the Google Maps link to your meetup location</p>
           </div>
           <button type="submit" id="submitBtn" class="nb-button nb-button-primary w-full">
@@ -92,7 +87,7 @@
     </div>
 
     <script type="module">
-      import nb from 'https://cdn.jsdelivr.net/npm/nonboard@1.0.2/+esm'
+      import nb from 'https://cdn.jsdelivr.net/npm/nonboard@1.0.5/+esm'
 
       let currentUser = null;
       const submitBtn = document.getElementById('submitBtn');
@@ -101,7 +96,8 @@
       const closeModal = document.getElementById('closeModal');
       const loginButton = document.getElementById('loginButton');
       const userProfile = document.getElementById('userProfile');
-      const changeUser = document.getElementById('changeUser');
+
+      document.getElementById('pubkey').setCustomValidity('Please log in with your Nostr account first.');
 
       const app = nb({
         appUrl: window.origin,
@@ -119,20 +115,26 @@
         closeNostrModal();
       }
 
-      function showUserProfile(user) {
-        document.getElementById('userAvatar').src = user.picture || 'https://via.placeholder.com/40';
-        document.getElementById('username').textContent = user.name || user.npub || 'Anonymous';
-        document.getElementById('nostrPubkey').value = user.pubkey;
+      function showUserProfile({pubkey, events}) {
+        const profile = {
+          name: "[profile not found]",
+          picture: `https://placehold.co/120?text=${pubkey[0].toUpperCase()}`,
+        }
+
+        try {
+          Object.assign(profile, JSON.parse(events.find(e => e.kind === 0)?.content))
+        } catch (e) {
+          // pass
+        }
+
+        document.getElementById('avatar').src = profile.picture
+        document.getElementById('username').textContent = profile.name
+        const nostrPubkeyInput = document.getElementById('pubkey');
+        nostrPubkeyInput.value = pubkey;
+        nostrPubkeyInput.setCustomValidity('');
 
         loginButton.classList.add('hidden');
         userProfile.classList.remove('hidden');
-      }
-
-      function hideUserProfile() {
-        loginButton.classList.remove('hidden');
-        userProfile.classList.add('hidden');
-        document.getElementById('nostrPubkey').value = '';
-        currentUser = null;
       }
 
       function openNostrModal() {
@@ -148,11 +150,6 @@
 
       nostrLoginBtn.addEventListener('click', openNostrModal);
       closeModal.addEventListener('click', closeNostrModal);
-      changeUser.addEventListener('click', () => {
-        hideUserProfile();
-        openNostrModal();
-      });
-
       nostrModal.addEventListener('click', (e) => {
         if (e.target === nostrModal) {
           closeNostrModal();
