@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BitcoinWalk</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nonboard@1.0.2/dist/index.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+      :root {
+        --primary-color: #f7931a;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="max-w-md mx-auto pt-12 px-4">
+      <div class="bg-white rounded-lg p-8">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">BitcoinWalk</h1>
+          <h2 class="text-xl text-gray-600">Start a Meetup</h2>
+        </div>
+
+        <div class="mb-6 p-4 bg-amber-50 rounded-lg">
+          <p class="text-sm text-amber-800">
+            <strong>Note:</strong> Before you submit your application, please check
+            our <a class="underline decoration-solid" href="https://bitcoinwalk.org/join-bitcoinwalk/" target="_blank">list of existing locations</a> to
+            see whether there is already a BitcoinWalk established in your area.
+          </p>
+        </div>
+
+        <form id="signupForm" action="/application/create/" method="POST" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Nostr Account
+            </label>
+            <div id="nostrField">
+              <div id="loginButton" class="w-full">
+                <button type="button" id="nostrLoginBtn" class="nb-button w-full">
+                  <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-2 0V4H5v12h10v-2a1 1 0 012 0v3a1 1 0 01-1 1H4a1 1 0 01-1-1V3z" clip-rule="evenodd"></path>
+                    <path fill-rule="evenodd" d="M6 10a1 1 0 011-1h6l-2-2a1 1 0 112-1.414L17.414 10 13 14.414a1 1 0 11-1.414-1.414L13 11H7a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                  </svg>
+                  Log in with Nostr
+                </button>
+              </div>
+              <div id="userProfile" class="hidden flex items-center p-3 rounded-lg bg-[var(--primary-color)]">
+                <img id="userAvatar" class="w-10 h-10 rounded-full mr-3" src="" alt="User avatar">
+                <div class="flex-1">
+                  <p id="username" class="text-sm font-medium text-gray-900"></p>
+                  <button type="button" id="changeUser" class="text-xs text-[#f7931a] hover:underline">Change account</button>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="nostrPubkey" name="nostrPubkey" required>
+          </div>
+
+          <div>
+            <label for="meetupName" class="block text-sm font-medium text-gray-700 mb-2">
+              Meetup Name (City)
+            </label>
+            <input
+              type="text"
+              id="meetupName"
+              name="meetupName"
+              required
+              placeholder="e.g., San Francisco"
+              class="nb-input w-full"
+            >
+          </div>
+
+          <div>
+            <label for="googleMapsLink" class="block text-sm font-medium text-gray-700 mb-2">
+              Google Maps Link
+            </label>
+            <input type="url" id="googleMapsLink" name="googleMapsLink" required placeholder="https://maps.google.com/..." class="nb-input w-full">
+            <p class="mt-1 text-xs text-gray-500">Paste the Google Maps link to your meetup location</p>
+          </div>
+          <button type="submit" id="submitBtn" class="nb-button nb-button-primary w-full">
+            Start a Bitcoin Walk!
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="nostrModal" class="opacity-0 transition-all fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 pointer-events-none">
+      <div class="bg-white rounded-lg p-6 w-xl mx-4 relative">
+        <button id="closeModal" class="absolute cursor-pointer top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+        <div id="login"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import nb from 'https://cdn.jsdelivr.net/npm/nonboard@1.0.2/+esm'
+
+      let currentUser = null;
+      const submitBtn = document.getElementById('submitBtn');
+      const nostrLoginBtn = document.getElementById('nostrLoginBtn');
+      const nostrModal = document.getElementById('nostrModal');
+      const closeModal = document.getElementById('closeModal');
+      const loginButton = document.getElementById('loginButton');
+      const userProfile = document.getElementById('userProfile');
+      const changeUser = document.getElementById('changeUser');
+
+      const app = nb({
+        appUrl: window.origin,
+        appName: "Bitcoin Walk",
+        appImage: "https://hbr.coracle.social/595c5702f0e17714f91cf19d0c00c6323270332489fe431839e6730ab5b91ba3.jpg",
+        onSignup: payload => handleAuth(payload),
+        onLogin: payload => handleAuth(payload),
+        onError: error => console.log("received error:", error),
+        onInfo: message => console.log("received info:", message),
+      })
+
+      function handleAuth(payload) {
+        currentUser = payload;
+        showUserProfile(payload);
+        closeNostrModal();
+      }
+
+      function showUserProfile(user) {
+        document.getElementById('userAvatar').src = user.picture || 'https://via.placeholder.com/40';
+        document.getElementById('username').textContent = user.name || user.npub || 'Anonymous';
+        document.getElementById('nostrPubkey').value = user.pubkey;
+
+        loginButton.classList.add('hidden');
+        userProfile.classList.remove('hidden');
+      }
+
+      function hideUserProfile() {
+        loginButton.classList.remove('hidden');
+        userProfile.classList.add('hidden');
+        document.getElementById('nostrPubkey').value = '';
+        currentUser = null;
+      }
+
+      function openNostrModal() {
+        nostrModal.classList.remove('opacity-0');
+        nostrModal.classList.remove('pointer-events-none');
+        app.mount(document.getElementById('login'));
+      }
+
+      function closeNostrModal() {
+        nostrModal.classList.add('opacity-0');
+        nostrModal.classList.add('pointer-events-none');
+      }
+
+      nostrLoginBtn.addEventListener('click', openNostrModal);
+      closeModal.addEventListener('click', closeNostrModal);
+      changeUser.addEventListener('click', () => {
+        hideUserProfile();
+        openNostrModal();
+      });
+
+      nostrModal.addEventListener('click', (e) => {
+        if (e.target === nostrModal) {
+          closeNostrModal();
+        }
+      });
+    </script>
+  </body>
+</html>
