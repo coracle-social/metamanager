@@ -1,6 +1,5 @@
 [Service]
 Restart=always
-Environment=PATH=/home/myuser/.pnpm/nodejs/20.10.0/bin:/usr/bin:/usr/local/bin
 Environment=NODE_ENV=production
 
 [Unit]

@@ -10,6 +10,7 @@ import type { ApplicationParams } from './domain.js'
 export const server = express()
 
 server.use(express.urlencoded({ extended: true }))
+server.use('/assets', express.static('src/assets'))
 
 server.use(
   rateLimit({
