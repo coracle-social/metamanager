@@ -1,4 +1,4 @@
 node_modules
-databse.db
+database.db
 package-lock.json
 dist
