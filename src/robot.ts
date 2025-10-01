@@ -1,14 +1,22 @@
 import type { TrustedEvent } from '@welshman/util'
-import { DIRECT_MESSAGE, MESSAGE, makeEvent, getRelayTagValues } from '@welshman/util'
-import { request, publish } from '@welshman/net'
+import { DIRECT_MESSAGE, INBOX_RELAYS, MESSAGE, makeEvent, getRelayTagValues } from '@welshman/util'
+import { request, publish, PublishStatus } from '@welshman/net'
 import { Nip59 } from '@welshman/signer'
 import { actions } from './actions.js'
 import { database } from './database.js'
 import { ADMIN_RELAY, INDEXER_RELAYS, ADMIN_ROOM, appSigner } from './env.js'
+import {getPublishError, dedent} from './util.js'
 
 const commands = {
   '/help': async (event: TrustedEvent) => {
-    robot.send(`\n- \`/help\` - display this message\n- \`/approve [id] [optional message]\` - approve an application\n- \`/reject [id] [optional message]\` - reject an application\n- \`/info [id]\` - displays information for the given application`)
+    robot.sendToAdmin(
+      dedent(`
+      - \`/help\` - display this message
+      - \`/approve [id] [optional message]\` - approve an application
+      - \`/reject [id] [optional message]\` - reject an application
+      - \`/info [id]\` - displays information for the given application
+      `)
+    )
   },
   '/approve': async (event: TrustedEvent) => {
     const [_, id, message] = event.content.match(/\/approve (\w+) ?(.*)/) || []
@@ -18,9 +26,9 @@ const commands = {
     if (application) {
       await actions.approveApplication({ id, message })
 
-      robot.send(`Successfully approved application ${id}`)
+      robot.sendToAdmin(`Successfully approved application ${id}`)
     } else {
-      robot.send(`Invalid application id: ${id}`)
+      robot.sendToAdmin(`Invalid application id: ${id}`)
     }
   },
   '/reject': async (event: TrustedEvent) => {
@@ -31,9 +39,9 @@ const commands = {
     if (application) {
       await actions.rejectApplication({ id, message })
 
-      robot.send(`Successfully rejected application ${id}`)
+      robot.sendToAdmin(`Successfully rejected application ${id}`)
     } else {
-      robot.send(`Invalid application id: ${id}`)
+      robot.sendToAdmin(`Invalid application id: ${id}`)
     }
   },
   '/info': async (event: TrustedEvent) => {
@@ -42,21 +50,22 @@ const commands = {
     const application = await database.getApplication(id)
 
     if (application) {
-      robot.send("```" + Object.entries(application).map(([k, v]) => `${k}: ${v}`).join('\n') + "```")
+      robot.sendToAdmin("```" + Object.entries(application).map(([k, v]) => `${k}: ${v}`).join('\n') + "```")
     } else {
-      robot.send(`Invalid application id: ${id}`)
+      robot.sendToAdmin(`Invalid application id: ${id}`)
     }
   }
 }
 
 export const robot = {
-  send: async (content: string) => {
+  sendToAdmin: async (content: string) => {
     const template = makeEvent(MESSAGE, { content, tags: [['h', ADMIN_ROOM]] })
     const event = await appSigner.sign(template)
+    const results = await publish({ relays: [ADMIN_RELAY], event })
 
-    return publish({ relays: [ADMIN_RELAY], event })
+    return getPublishError(results, `Failed to message to admin`)
   },
-  listen: () => {
+  listenToAdmin: () => {
     request({
       relays: [ADMIN_RELAY],
       filters: [{ kinds: [MESSAGE], '#h': [ADMIN_ROOM], limit: 0 }],
@@ -73,8 +82,9 @@ export const robot = {
     const nip59 = Nip59.fromSigner(appSigner)
     const template = makeEvent(DIRECT_MESSAGE, { content, tags: [['p', pubkey]] })
     const event = await nip59.wrap(pubkey, template)
+    const results = await publish({ relays, event: event.wrap })
 
-    return publish({ relays, event: event.wrap })
+    return getPublishError(results, `Failed to send DM to ${pubkey}`)
   },
   loadMessagingRelays: async (pubkey: string) => {
     let relays = ['wss://auth.nostr1.com/', 'wss://inbox.nostr.wine/']
@@ -82,7 +92,7 @@ export const robot = {
     await request({
       autoClose: true,
       relays: INDEXER_RELAYS,
-      filters: [{ kinds: [MESSAGE], '#h': [ADMIN_ROOM], limit: 0 }],
+      filters: [{ kinds: [INBOX_RELAYS], authors: [pubkey] }],
       onEvent: (event: TrustedEvent) => {
         relays = getRelayTagValues(event.tags)
       },

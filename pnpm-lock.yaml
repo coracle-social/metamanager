@@ -12,20 +12,20 @@ importers:
         specifier: ^22.18.1
         version: 22.18.1
       '@welshman/lib':
-        specifier: ^0.4.6
-        version: 0.4.6
+        specifier: ^0.5.1
+        version: 0.5.1
       '@welshman/net':
-        specifier: ^0.4.6
-        version: 0.4.6(typescript@5.9.2)(ws@8.18.3)
+        specifier: ^0.5.1
+        version: 0.5.1(typescript@5.9.2)(ws@8.18.3)
       '@welshman/signer':
-        specifier: ^0.4.6
-        version: 0.4.6(nostr-signer-capacitor-plugin@0.0.4(@capacitor/core@7.4.3))(typescript@5.9.2)(ws@8.18.3)
+        specifier: ^0.5.1
+        version: 0.5.1(nostr-signer-capacitor-plugin@0.0.5(@capacitor/core@7.4.3))(typescript@5.9.2)(ws@8.18.3)
       '@welshman/store':
-        specifier: ^0.4.6
-        version: 0.4.6(typescript@5.9.2)
+        specifier: ^0.5.1
+        version: 0.5.1(typescript@5.9.2)
       '@welshman/util':
-        specifier: ^0.4.6
-        version: 0.4.6(typescript@5.9.2)
+        specifier: ^0.5.1
+        version: 0.5.1(typescript@5.9.2)
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
@@ -176,8 +176,8 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
-  '@jridgewell/trace-mapping@0.3.30':
-    resolution: {integrity: sha512-GQ7Nw5G2lTu/BtHTKfXhKHok2WGetd4XYcVKGx00SjAk8GMwgJM3zr6zORiPGuOE+/vkc90KtTosSSvaCjKb2Q==}
+  '@jridgewell/trace-mapping@0.3.31':
+    resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
   '@noble/ciphers@0.5.3':
     resolution: {integrity: sha512-B0+6IIHiqEs3BPMT0hcRmHvEj2QHOLu+uwt+tqDDeVd0oyVzh7BPrDcPjRnV1PV/5LaknXJJQvOuRGR0zQJz+w==}
@@ -362,26 +362,26 @@ packages:
     resolution: {integrity: sha512-T+S1KqRD4sg/bHfLwrpF/K3gQLBM1n7Rp7OjjikjTEssI2YJzQpi5WXoynOaQ93ERIuq3O8RBTOUYDKszUCEHw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@welshman/lib@0.4.6':
-    resolution: {integrity: sha512-CyIlIPKxv/xaF+1U0wjA6MMiTOnoInkcECTaSzRXTaiFAwMl91MJpmV9X0zGK+SgUMoq91hM2GCUt301fcCXVg==}
+  '@welshman/lib@0.5.1':
+    resolution: {integrity: sha512-XPttF23jzwwgdmd83d+AZPCxZbkoQfJhn6p+w3hr5gdvunmDp3xdBf+fegnQYv/HIDBMQOHzyM/XxUYmqNDheA==}
     engines: {node: '>=12.0.0'}
 
-  '@welshman/net@0.4.6':
-    resolution: {integrity: sha512-sivSyKKTqYaUyU8335SoOwXi5IW/wz3rru97GrrmtLDPDWPbuLN5DBI8WL42YFxjIlIqCKzgagkMWwEWkYZpsA==}
+  '@welshman/net@0.5.1':
+    resolution: {integrity: sha512-NSgAgiJhJvme9ov2/JP+ehuao/WMpjcQNFkshGaoe+PtzpwMsBSz9rEiwuPpZwsz3/edPdv8DgJwOzL6rQM+bw==}
 
-  '@welshman/relay@0.4.6':
-    resolution: {integrity: sha512-Mg820k7bYR5PLEjtf0BNYXHMuJC4jELwjajqNYZ04gtcifyyY3x7uWnBBSVr6Hfipx97PCsrxWZiuuACI9vfsQ==}
+  '@welshman/relay@0.5.1':
+    resolution: {integrity: sha512-yyKvJt/3Vf2at7bqrGKPawHnuOVS1BKrMN8zyFLa49ntNi394+foWDkmMBEUZMdJBVVK5YVk/SQ0rJ2RkRj/gA==}
 
-  '@welshman/signer@0.4.6':
-    resolution: {integrity: sha512-KkmPPwyWRTDQQxed0cHZE2LxlsdzqnwqOzx9aKoSPh82QWR/3/K+EkZYtU6QMllwc/VUoYJUyHQRPOi0J012WA==}
+  '@welshman/signer@0.5.1':
+    resolution: {integrity: sha512-Ok8qUD7Mp7fHYXUxDnw0k0/fkiBxNomPXlt7EQ16RZ8ND9QayhP4U+MCXUGfIqzh89cPtwBnhZYofKsqaSWD0Q==}
     peerDependencies:
       nostr-signer-capacitor-plugin: ~0.0.4
 
-  '@welshman/store@0.4.6':
-    resolution: {integrity: sha512-NU+5p1jQ6pG21QZmfVE9fXd85C+2aKxv5gCX1YY8uDOU1kqyTP4SmQtRmllx3ABxsOtCErayn3vGP6rekKy5Lw==}
+  '@welshman/store@0.5.1':
+    resolution: {integrity: sha512-wuQt/RGMk1dkOfImGfnCm+dDMI0+6mFIRXC17nC3v8TT/k0HUY8+JXPgYo9PP5E98YK3zFpmdeqFmxj4Q4puGA==}
 
-  '@welshman/util@0.4.6':
-    resolution: {integrity: sha512-Fc4Lz+goLNAKBMdQF19IeT6KJWPpk+dLdlS9H+ctIQNLCYbviz1yyKNCQ12MjkEjEQy0LEJGxo/yIPffA9x36g==}
+  '@welshman/util@0.5.1':
+    resolution: {integrity: sha512-8Hn0ONx2yc3l3D/7DMFkqIPlMU1b7CeMmEz+np43f5+X5y7iWJ3LGau2nJ6lSbIyM1WaxFl3++W691+bFPNz3Q==}
 
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
@@ -1166,8 +1166,8 @@ packages:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
 
-  nostr-signer-capacitor-plugin@0.0.4:
-    resolution: {integrity: sha512-cuoTUULKE6g+CQmFgz3R5yP6OD4o5owvU1LdS+GdO5ElMdaBPlwiBzWSQpl6eYOFCqkGukhnXNEUWhgvUpgymg==}
+  nostr-signer-capacitor-plugin@0.0.5:
+    resolution: {integrity: sha512-/EvqWz71HZ5cWmzvfXWTm48AWZtbeZDbOg3vLwXyXPjnIp1DR7Wurww/Mo41ORNu1DNPlqH20l7kIXKO6vR5og==}
     peerDependencies:
       '@capacitor/core': ^7.0.0
 
@@ -1561,7 +1561,7 @@ snapshots:
   '@ampproject/remapping@2.3.0':
     dependencies:
       '@jridgewell/gen-mapping': 0.3.13
-      '@jridgewell/trace-mapping': 0.3.30
+      '@jridgewell/trace-mapping': 0.3.31
 
   '@blakeembrey/deque@1.0.5': {}
 
@@ -1632,13 +1632,13 @@ snapshots:
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
-      '@jridgewell/trace-mapping': 0.3.30
+      '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@jridgewell/trace-mapping@0.3.30':
+  '@jridgewell/trace-mapping@0.3.31':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -1873,56 +1873,56 @@ snapshots:
       '@typescript-eslint/types': 8.43.0
       eslint-visitor-keys: 4.2.1
 
-  '@welshman/lib@0.4.6':
+  '@welshman/lib@0.5.1':
     dependencies:
       '@scure/base': 1.2.6
       '@types/events': 3.0.3
       events: 3.3.0
 
-  '@welshman/net@0.4.6(typescript@5.9.2)(ws@8.18.3)':
+  '@welshman/net@0.5.1(typescript@5.9.2)(ws@8.18.3)':
     dependencies:
-      '@welshman/lib': 0.4.6
-      '@welshman/relay': 0.4.6(typescript@5.9.2)
-      '@welshman/util': 0.4.6(typescript@5.9.2)
+      '@welshman/lib': 0.5.1
+      '@welshman/relay': 0.5.1(typescript@5.9.2)
+      '@welshman/util': 0.5.1(typescript@5.9.2)
       events: 3.3.0
       isomorphic-ws: 5.0.0(ws@8.18.3)
     transitivePeerDependencies:
       - typescript
       - ws
 
-  '@welshman/relay@0.4.6(typescript@5.9.2)':
+  '@welshman/relay@0.5.1(typescript@5.9.2)':
     dependencies:
-      '@welshman/lib': 0.4.6
-      '@welshman/util': 0.4.6(typescript@5.9.2)
+      '@welshman/lib': 0.5.1
+      '@welshman/util': 0.5.1(typescript@5.9.2)
     transitivePeerDependencies:
       - typescript
 
-  '@welshman/signer@0.4.6(nostr-signer-capacitor-plugin@0.0.4(@capacitor/core@7.4.3))(typescript@5.9.2)(ws@8.18.3)':
+  '@welshman/signer@0.5.1(nostr-signer-capacitor-plugin@0.0.5(@capacitor/core@7.4.3))(typescript@5.9.2)(ws@8.18.3)':
     dependencies:
       '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
-      '@welshman/lib': 0.4.6
-      '@welshman/net': 0.4.6(typescript@5.9.2)(ws@8.18.3)
-      '@welshman/util': 0.4.6(typescript@5.9.2)
-      nostr-signer-capacitor-plugin: 0.0.4(@capacitor/core@7.4.3)
+      '@welshman/lib': 0.5.1
+      '@welshman/net': 0.5.1(typescript@5.9.2)(ws@8.18.3)
+      '@welshman/util': 0.5.1(typescript@5.9.2)
+      nostr-signer-capacitor-plugin: 0.0.5(@capacitor/core@7.4.3)
       nostr-tools: 2.16.2(typescript@5.9.2)
     transitivePeerDependencies:
       - typescript
       - ws
 
-  '@welshman/store@0.4.6(typescript@5.9.2)':
+  '@welshman/store@0.5.1(typescript@5.9.2)':
     dependencies:
-      '@welshman/lib': 0.4.6
-      '@welshman/relay': 0.4.6(typescript@5.9.2)
-      '@welshman/util': 0.4.6(typescript@5.9.2)
+      '@welshman/lib': 0.5.1
+      '@welshman/relay': 0.5.1(typescript@5.9.2)
+      '@welshman/util': 0.5.1(typescript@5.9.2)
       svelte: 4.2.20
     transitivePeerDependencies:
       - typescript
 
-  '@welshman/util@0.4.6(typescript@5.9.2)':
+  '@welshman/util@0.5.1(typescript@5.9.2)':
     dependencies:
       '@types/ws': 8.18.1
-      '@welshman/lib': 0.4.6
+      '@welshman/lib': 0.5.1
       js-base64: 3.7.8
       nostr-tools: 2.16.2(typescript@5.9.2)
       nostr-wasm: 0.1.0
@@ -2801,7 +2801,7 @@ snapshots:
 
   normalize-path@3.0.0: {}
 
-  nostr-signer-capacitor-plugin@0.0.4(@capacitor/core@7.4.3):
+  nostr-signer-capacitor-plugin@0.0.5(@capacitor/core@7.4.3):
     dependencies:
       '@capacitor/core': 7.4.3
 
@@ -3132,7 +3132,7 @@ snapshots:
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@jridgewell/sourcemap-codec': 1.5.5
-      '@jridgewell/trace-mapping': 0.3.30
+      '@jridgewell/trace-mapping': 0.3.31
       '@types/estree': 1.0.8
       acorn: 8.15.0
       aria-query: 5.3.2

@@ -1,4 +1,6 @@
 import {identity} from '@welshman/lib'
+import {PublishResultsByRelay, PublishStatus} from '@welshman/net'
+import {displayRelayUrl} from '@welshman/util'
 
 export const slugify = (s: string) =>
   s
@@ -27,3 +29,17 @@ export const dedent = (s: string) => {
     .trim()
 }
 
+export const getPublishError = (results: PublishResultsByRelay, message: string) => {
+  const items = Object.values(results)
+  const errors: string[] = []
+
+  for (const result of items) {
+    if (result.status !== PublishStatus.Success) {
+      errors.push(`${result.detail} (${displayRelayUrl(result.relay)})`)
+    }
+  }
+
+  if (errors.length === items.length) {
+    return `${message}: ${errors.join('; ')}`
+  }
+}

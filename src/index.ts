@@ -12,7 +12,7 @@ process.on('uncaughtException', (error: Error) => {
 })
 
 database.migrate().then(async () => {
-  robot.listen()
+  robot.listenToAdmin()
   server.listen(PORT, () => {
     console.log('Running on port', PORT)
   })

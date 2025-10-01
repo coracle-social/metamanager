@@ -1,9 +1,9 @@
 import * as nip19 from 'nostr-tools/nip19'
-import {randomId} from '@welshman/lib'
 import {makeSecret} from '@welshman/signer'
 import { instrument } from 'succinct-async'
 import {writeFile} from 'fs/promises'
 import {join} from 'path'
+import {sha256, hexToBytes} from '@welshman/lib'
 import {ADMIN_PUBKEYS, CONFIG_DIR} from './env.js'
 import {slugify, dedent} from './util.js'
 import type {
@@ -25,8 +25,11 @@ const createApplication = instrument(
   async (params: ApplicationParams) => {
     const application = await database.createApplication(params)
     const npub = nip19.npubEncode(application.pubkey)
+    const error = await robot.sendToAdmin(`New application (ID: ${application.id}) "${application.city}" from nostr:${npub}\n${application.pin}`)
 
-    robot.send(`New application (ID: ${application.id}) "${application.city}" from nostr:${npub}\n${application.pin}`)
+    if (error) {
+      console.error(error)
+    }
 
     return application
   }
@@ -40,7 +43,8 @@ const approveApplication = instrument(
     // Configure relay
 
     const secret = makeSecret()
-    const schema = slugify(`bitcoinwalk_${application.city}_${randomId().slice(0, 4)}`)
+    const hash = await sha256(hexToBytes(application.pubkey))
+    const schema = slugify(`${application.city}_${hash.slice(0, 4)}`)
     const host = `${schema}.coracle.chat`
     const name = `BitcoinWalk ${application.city}`
     const zooidConfig = dedent(`
@@ -82,8 +86,15 @@ const approveApplication = instrument(
     `)
 
     const relays = await robot.loadMessagingRelays(application.pubkey)
+    const error = await robot.sendDirectMessage(application.pubkey, content, relays)
 
-    await robot.sendDirectMessage(application.pubkey, content, relays)
+    if (error) {
+      const adminError = await robot.sendToAdmin(error)
+
+      if (adminError) {
+        console.error(adminError)
+      }
+    }
 
     // TODO:
     // - Set up DNS
