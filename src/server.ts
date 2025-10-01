@@ -40,7 +40,6 @@ addRoute('get', '/', async (req: Request, res: Response) => {
 })
 
 addRoute('post', '/application/create', async (req: Request, res: Response) => {
-  console.log(req.body)
   await actions.createApplication(req.body as ApplicationParams)
 
   res.send(await render('pages/signup-complete.html'))

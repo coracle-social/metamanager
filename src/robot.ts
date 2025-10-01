@@ -1,9 +1,10 @@
 import type { TrustedEvent } from '@welshman/util'
-import { MESSAGE, makeEvent } from '@welshman/util'
+import { DIRECT_MESSAGE, MESSAGE, makeEvent, getRelayTagValues } from '@welshman/util'
 import { request, publish } from '@welshman/net'
+import { Nip59 } from '@welshman/signer'
 import { actions } from './actions.js'
 import { database } from './database.js'
-import { ADMIN_RELAY, ADMIN_ROOM, appSigner } from './env.js'
+import { ADMIN_RELAY, INDEXER_RELAYS, ADMIN_ROOM, appSigner } from './env.js'
 
 const commands = {
   '/help': async (event: TrustedEvent) => {
@@ -53,7 +54,7 @@ export const robot = {
     const template = makeEvent(MESSAGE, { content, tags: [['h', ADMIN_ROOM]] })
     const event = await appSigner.sign(template)
 
-    await publish({ relays: [ADMIN_RELAY], event })
+    return publish({ relays: [ADMIN_RELAY], event })
   },
   listen: () => {
     request({
@@ -68,4 +69,25 @@ export const robot = {
       },
     })
   },
+  sendDirectMessage: async (pubkey: string, content: string, relays: string[]) => {
+    const nip59 = Nip59.fromSigner(appSigner)
+    const template = makeEvent(DIRECT_MESSAGE, { content, tags: [['p', pubkey]] })
+    const event = await nip59.wrap(pubkey, template)
+
+    return publish({ relays, event: event.wrap })
+  },
+  loadMessagingRelays: async (pubkey: string) => {
+    let relays = ['wss://auth.nostr1.com/', 'wss://inbox.nostr.wine/']
+
+    await request({
+      autoClose: true,
+      relays: INDEXER_RELAYS,
+      filters: [{ kinds: [MESSAGE], '#h': [ADMIN_ROOM], limit: 0 }],
+      onEvent: (event: TrustedEvent) => {
+        relays = getRelayTagValues(event.tags)
+      },
+    })
+
+    return relays
+  }
 }
