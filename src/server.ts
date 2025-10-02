@@ -1,7 +1,6 @@
 import { instrument } from 'succinct-async'
 import express, { Request, Response, NextFunction } from 'express'
 import rateLimit from 'express-rate-limit'
-import { render } from './templates.js'
 import { actions, ActionError } from './actions.js'
 import type { ApplicationParams } from './domain.js'
 
@@ -9,7 +8,7 @@ import type { ApplicationParams } from './domain.js'
 
 export const server = express()
 
-server.use(express.urlencoded({ extended: true }))
+server.use(express.json())
 server.use('/assets', express.static('src/assets'))
 
 server.use(
@@ -35,14 +34,10 @@ const addRoute = (method: 'get' | 'post', path: string, handler: Handler) => {
   )
 }
 
-addRoute('get', '/', async (req: Request, res: Response) => {
-  return res.send(await render('pages/signup.html'))
-})
-
 addRoute('post', '/application/create', async (req: Request, res: Response) => {
   await actions.createApplication(req.body as ApplicationParams)
 
-  res.send(await render('pages/signup-complete.html'))
+  res.json({ success: true })
 })
 
 server.use((err: Error, req: Request, res: Response, next: NextFunction) => {

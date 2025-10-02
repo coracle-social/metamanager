@@ -1,6 +1,6 @@
 import type { TrustedEvent } from '@welshman/util'
 import { DIRECT_MESSAGE, INBOX_RELAYS, MESSAGE, makeEvent, getRelayTagValues } from '@welshman/util'
-import { request, publish, PublishStatus } from '@welshman/net'
+import { request, publish } from '@welshman/net'
 import { Nip59 } from '@welshman/signer'
 import { actions } from './actions.js'
 import { database } from './database.js'
