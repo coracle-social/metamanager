@@ -1,0 +1,2 @@
+New application (ID: {{{ID}}}) "{{{City}}}" from nostr:{{{Npub}}}
+{{{Pin}}}

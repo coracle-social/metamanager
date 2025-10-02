@@ -1,0 +1,19 @@
+host = "{{Host}}"
+schema = "{{Schema}}"
+secret = "{{Secret}}"
+
+[info]
+name = "{{Name}}"
+icon = "https://bitcoinwalk.org/wp-content/uploads/2025/04/cropped-Bitcoin-Walk-Logo-avatar.png"
+pubkey = "{{Pubkey}}"
+description = "A BitcoinWalk community for {{City}}"
+
+[management]
+enabled = true
+
+[roles.member]
+can_invite = true
+
+[roles.admin]
+can_manage = true
+pubkeys = {{{AdminPubkeys}}}

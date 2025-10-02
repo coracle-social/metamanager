@@ -1,0 +1,3 @@
+Sorry, your application to start a BitcoinWalk meetup has been rejected. {{{Message}}}
+
+Thanks for applying! Don't hesitate to get in touch if you have any questions.

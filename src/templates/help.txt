@@ -1,0 +1,4 @@
+- `/help` - display this message
+- `/approve [id] [optional message]` - approve an application with an optional message to the applicant.
+- `/reject [id] [optional message]` - reject an application with an optional message to the applicant.
+- `/info [id]` - displays information for the given application

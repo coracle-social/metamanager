@@ -4,13 +4,14 @@ import { instrument } from 'succinct-async'
 import {writeFile} from 'fs/promises'
 import {join} from 'path'
 import {sha256, hexToBytes} from '@welshman/lib'
-import {ADMIN_PUBKEYS, CONFIG_DIR} from './env.js'
-import {slugify, dedent} from './util.js'
+import {ADMIN_PUBKEYS, CONFIG_DIR, RELAY_DOMAIN} from './env.js'
+import {slugify} from './util.js'
 import type {
   ApplicationParams,
   ApplicationApprovalParams,
   ApplicationRejectionParams,
 } from './domain.js'
+import { render } from './templates.js'
 import { database } from './database.js'
 import { robot} from './robot.js'
 
@@ -24,8 +25,14 @@ const createApplication = instrument(
   'actions.createApplication',
   async (params: ApplicationParams) => {
     const application = await database.createApplication(params)
-    const npub = nip19.npubEncode(application.pubkey)
-    const error = await robot.sendToAdmin(`New application (ID: ${application.id}) "${application.city}" from nostr:${npub}\n${application.pin}`)
+    const error = await robot.sendToAdmin(
+      await render('templates/new-application.txt', {
+        ID: application.id,
+        Pin: application.pin,
+        City: application.city,
+        Npub: nip19.npubEncode(application.pubkey),
+      })
+    )
 
     if (error) {
       console.error(error)
@@ -42,49 +49,24 @@ const approveApplication = instrument(
 
     // Configure relay
 
-    const secret = makeSecret()
     const hash = await sha256(hexToBytes(application.pubkey))
     const schema = slugify(`${application.city}_${hash.slice(0, 4)}`)
-    const host = `${schema}.coracle.chat`
-    const name = `BitcoinWalk ${application.city}`
-    const zooidConfig = dedent(`
-    host = "${host}"
-    schema = "${schema}"
-    secret = "${secret}"
+    const host = schema + '.' + RELAY_DOMAIN
+    const config = await render('templates/config.toml', {
+      Secret: makeSecret(),
+      Schema: schema,
+      Host: host,
+      Name: `BitcoinWalk ${application.city}`,
+      AdminPubkeys: JSON.stringify(ADMIN_PUBKEYS),
+      Pubkey: application.pubkey,
+      City: application.city,
+    })
 
-    [info]
-    name = "${name}"
-    icon = "https://bitcoinwalk.org/wp-content/uploads/2025/04/cropped-Bitcoin-Walk-Logo-avatar.png"
-    pubkey = "${application.pubkey}"
-    description = "A BitcoinWalk community for ${application.city}"
-
-    [management]
-    enabled = true
-
-    [roles.member]
-    can_invite = true
-
-    [roles.admin]
-    can_manage = true
-    pubkeys = ${JSON.stringify(ADMIN_PUBKEYS)}
-    `)
-
-    await writeFile(join(CONFIG_DIR, `${schema}.toml`), zooidConfig, 'utf-8')
+    await writeFile(join(CONFIG_DIR, `${schema}.toml`), config, 'utf-8')
 
     // Notify organizer
 
-    const content = dedent(`
-    Congratulations! Your application to start a BitcoinWalk meetup has been approved.
-
-    To access your community, visit https://app.flotilla.social/spaces/${host} and log in with nostr.
-
-    From there, you can generate an invite code that you can share with people interested in joining your group!
-
-    To manage your community, please visit https://landlubber.coracle.social and enter your relay URL: wss://${host}.
-
-    Thanks for participating in BitcoinWalk! Don't hesitate to get in touch if you need anything.
-    `)
-
+    const content = await render('templates/approved.txt', {Host: host, Message: params.message})
     const relays = await robot.loadMessagingRelays(application.pubkey)
     const error = await robot.sendDirectMessage(application.pubkey, content, relays)
 
@@ -96,10 +78,6 @@ const approveApplication = instrument(
       }
     }
 
-    // TODO:
-    // - Set up DNS
-    // - Update website
-
     return application
   }
 )
@@ -108,9 +86,17 @@ const rejectApplication = instrument(
   'actions.rejectApplication',
   async (params: ApplicationRejectionParams) => {
     const application = await database.rejectApplication(params)
+    const content = await render('templates/rejected.txt', {Message: params.message})
+    const relays = await robot.loadMessagingRelays(application.pubkey)
+    const error = await robot.sendDirectMessage(application.pubkey, content, relays)
 
-    // TODO:
-    // - Notify organizer
+    if (error) {
+      const adminError = await robot.sendToAdmin(error)
+
+      if (adminError) {
+        console.error(adminError)
+      }
+    }
 
     return application
   }
