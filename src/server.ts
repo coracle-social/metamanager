@@ -11,6 +11,18 @@ export const server = express()
 server.use(express.json())
 server.use('/assets', express.static('src/assets'))
 
+server.use((req: Request, res: Response, next: NextFunction) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', '*')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200)
+  }
+
+  next()
+})
+
 server.use(
   rateLimit({
     limit: 30,
@@ -34,7 +46,7 @@ const addRoute = (method: 'get' | 'post', path: string, handler: Handler) => {
   )
 }
 
-addRoute('post', '/application/create', async (req: Request, res: Response) => {
+addRoute('post', '/apply', async (req: Request, res: Response) => {
   await actions.createApplication(req.body as ApplicationParams)
 
   res.json({ success: true })
