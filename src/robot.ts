@@ -4,19 +4,13 @@ import { request, publish } from '@welshman/net'
 import { Nip59 } from '@welshman/signer'
 import { actions } from './actions.js'
 import { database } from './database.js'
+import { render } from './templates.js'
 import { ADMIN_RELAY, INDEXER_RELAYS, ADMIN_ROOM, appSigner } from './env.js'
-import {getPublishError, dedent} from './util.js'
+import {getPublishError} from './util.js'
 
 const commands = {
   '/help': async (event: TrustedEvent) => {
-    robot.sendToAdmin(
-      dedent(`
-      - \`/help\` - display this message
-      - \`/approve [id] [optional message]\` - approve an application
-      - \`/reject [id] [optional message]\` - reject an application
-      - \`/info [id]\` - displays information for the given application
-      `)
-    )
+    robot.sendToAdmin(await render('templates/help.txt'))
   },
   '/approve': async (event: TrustedEvent) => {
     const [_, id, message] = event.content.match(/\/approve (\w+) ?(.*)/) || []
