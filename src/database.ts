@@ -8,8 +8,9 @@ import type {
   ApplicationRejectionParams,
   Application,
 } from './domain.js'
+import { DATABASE_PATH } from './env.js'
 
-const db = new sqlite3.Database('database.db')
+const db = new sqlite3.Database(DATABASE_PATH)
 
 type Param = number | string | boolean
 

@@ -1,0 +1,42 @@
+# Environment files
+.env
+
+# Database
+database.db
+
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+yarn-error.log
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation and development files
+README.md
+
+# Config files
+.prettierrc
+.prettierignore
+.nvmrc
+.ackrc
+.fdignore
+eslint.config.mjs
