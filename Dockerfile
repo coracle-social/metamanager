@@ -16,6 +16,9 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
+# Use unprivileged user
+USER nonroot:nonroot
+
 # Build the application
 RUN pnpm run build
 
