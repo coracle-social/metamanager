@@ -7,6 +7,15 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Set working directory
 WORKDIR /app
 
+# Add unprivileged user
+RUN addgroup -S nonroot && adduser -S -G nonroot nonroot
+
+# Chown our active directory
+RUN chown -R nonroot:nonroot /app
+
+# Use unprivileged user
+USER nonroot:nonroot
+
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
@@ -15,9 +24,6 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
-
-# Use unprivileged user
-USER nonroot:nonroot
 
 # Build the application
 RUN pnpm run build
