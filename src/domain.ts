@@ -1,22 +1,22 @@
 export type ApplicationParams = {
+  name: string
   pubkey: string
-  city: string
-  pin: string
+  metadata: Record<string, string>
 }
 
 export type Application = ApplicationParams & {
-  id: string
+  schema: string
   created_at: number
   approved_at: number
   rejected_at: number
 }
 
 export type ApplicationApprovalParams = {
-  id: string
+  schema: string
   message: string
 }
 
 export type ApplicationRejectionParams = {
-  id: string
+  schema: string
   message: string
 }

@@ -1,2 +1,6 @@
-New application (ID: {{{ID}}}) "{{{City}}}" from nostr:{{{Npub}}}
-{{{Pin}}}
+New application (Schema: {{{Schema}}}) "{{{Name}}}" from nostr:{{{Npub}}}
+
+{{#Metadata}}
+{{{Key}}}:
+{{{Value}}}
+{{/Metadata}}

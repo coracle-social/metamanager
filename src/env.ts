@@ -4,7 +4,7 @@ import type { StampedEvent } from '@welshman/util'
 import { normalizeRelayUrl } from '@welshman/util'
 import type { Socket } from '@welshman/net'
 import { defaultSocketPolicies, makeSocketPolicyAuth } from '@welshman/net'
-import {fromCsv} from './util.js'
+import { fromCsv } from './util.js'
 
 // Load .env.template first for defaults, then .env for overrides
 config({ path: '.env.template' })
@@ -39,5 +39,5 @@ defaultSocketPolicies.push(
   makeSocketPolicyAuth({
     sign: (event: StampedEvent) => appSigner.sign(event),
     shouldAuth: (socket: Socket) => true,
-  }),
+  })
 )

@@ -1,54 +1,71 @@
+import { formatTimestamp } from '@welshman/lib'
 import type { TrustedEvent } from '@welshman/util'
 import { DIRECT_MESSAGE, INBOX_RELAYS, MESSAGE, makeEvent, getRelayTagValues } from '@welshman/util'
 import { request, publish } from '@welshman/net'
 import { Nip59 } from '@welshman/signer'
+import * as nip19 from 'nostr-tools/nip19'
 import { actions } from './actions.js'
 import { database } from './database.js'
 import { render } from './templates.js'
-import { ADMIN_RELAY, INDEXER_RELAYS, ADMIN_ROOM, appSigner } from './env.js'
-import {getPublishError} from './util.js'
+import { ADMIN_RELAY, INDEXER_RELAYS, ADMIN_ROOM, RELAY_DOMAIN, appSigner } from './env.js'
+import { getPublishError } from './util.js'
 
 const commands = {
   '/help': async (event: TrustedEvent) => {
     robot.sendToAdmin(await render('templates/help.txt'))
   },
   '/approve': async (event: TrustedEvent) => {
-    const [_, id, message] = event.content.match(/\/approve (\w+) ?(.*)/) || []
+    const [_, schema, message] = event.content.match(/\/approve (\w+) ?(.*)/) || []
 
-    const application = await database.getApplication(id)
+    const application = await database.getApplication(schema)
 
     if (application) {
-      await actions.approveApplication({ id, message })
+      await actions.approveApplication({ schema, message })
 
-      robot.sendToAdmin(`Successfully approved application ${id}`)
+      robot.sendToAdmin(`Successfully approved application ${schema}`)
     } else {
-      robot.sendToAdmin(`Invalid application id: ${id}`)
+      robot.sendToAdmin(`Invalid application id: ${schema}`)
     }
   },
   '/reject': async (event: TrustedEvent) => {
-    const [_, id, message] = event.content.match(/\/reject (\w+) ?(.*)/) || []
+    const [_, schema, message] = event.content.match(/\/reject (\w+) ?(.*)/) || []
 
-    const application = await database.getApplication(id)
+    const application = await database.getApplication(schema)
 
     if (application) {
-      await actions.rejectApplication({ id, message })
+      await actions.rejectApplication({ schema, message })
 
-      robot.sendToAdmin(`Successfully rejected application ${id}`)
+      robot.sendToAdmin(`Successfully rejected application ${schema}`)
     } else {
-      robot.sendToAdmin(`Invalid application id: ${id}`)
+      robot.sendToAdmin(`Invalid application id: ${schema}`)
     }
   },
   '/info': async (event: TrustedEvent) => {
-    const [_, id] = event.content.match(/\/info (\w+)/) || []
+    const [_, schema] = event.content.match(/\/info (\w+)/) || []
 
-    const application = await database.getApplication(id)
+    const application = await database.getApplication(schema)
 
     if (application) {
-      robot.sendToAdmin("```" + Object.entries(application).map(([k, v]) => `${k}: ${v}`).join('\n') + "```")
+      robot.sendToAdmin(
+        await render('templates/info.txt', {
+          ...application,
+          Host: application.schema + '.' + RELAY_DOMAIN,
+          Npub: nip19.npubEncode(application.pubkey),
+          Metadata: Object.entries(application.metadata).map(([key, value]) => ({
+            Key: key,
+            Value: value,
+          })),
+          CreatedDate: formatTimestamp(application.created_at),
+          ApprovedDate: formatTimestamp(application.approved_at),
+          RejectedDate: formatTimestamp(application.rejected_at),
+          IsApproved: !!application.approved_at,
+          IsRejected: !!application.rejected_at,
+        })
+      )
     } else {
-      robot.sendToAdmin(`Invalid application id: ${id}`)
+      robot.sendToAdmin(`Invalid application id: ${schema}`)
     }
-  }
+  },
 }
 
 export const robot = {
@@ -93,5 +110,5 @@ export const robot = {
     })
 
     return relays
-  }
+  },
 }

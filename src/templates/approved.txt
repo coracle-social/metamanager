@@ -2,4 +2,4 @@ Congratulations! Your application to start a BitcoinWalk meetup has been approve
 
 To access your community, visit https://app.flotilla.social/join?r={{{Host}}} and log in with nostr. From there, you can generate an invite code that you can share with people interested in joining your group! To manage your community, please visit https://landlubber.coracle.social and enter your relay URL: wss://{{{Host}}}.
 
-Thanks for participating in BitcoinWalk! Don't hesitate to get in touch if you need anything. A great place to start is by joining the BitcoinWalk organizers group at https://app.flotilla.social/join?r=meta.bitcoinwalk.org&c=.
+Thanks for participating in BitcoinWalk! Don't hesitate to get in touch if you need anything. A great place to start is by joining the BitcoinWalk organizers group at https://app.flotilla.social/join?r=meta.bitcoinwalk.org&c=Y6DKSPR0.

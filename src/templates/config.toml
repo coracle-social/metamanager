@@ -6,7 +6,7 @@ secret = "{{Secret}}"
 name = "{{Name}}"
 icon = "https://bitcoinwalk.org/wp-content/uploads/2025/04/cropped-Bitcoin-Walk-Logo-avatar.png"
 pubkey = "{{Pubkey}}"
-description = "A BitcoinWalk community for {{City}}"
+description = "{{Description}}"
 
 [management]
 enabled = true
