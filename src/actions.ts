@@ -3,9 +3,10 @@ import { makeSecret } from '@welshman/signer'
 import { instrument } from 'succinct-async'
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
-import { sha256, hexToBytes } from '@welshman/lib'
+import { randomId } from '@welshman/lib'
 import { ADMIN_PUBKEYS, CONFIG_DIR, RELAY_DOMAIN } from './env.js'
 import { slugify } from './util.js'
+import { getMetadata } from './domain.js'
 import type {
   ApplicationParams,
   ApplicationApprovalParams,
@@ -24,9 +25,7 @@ export class ActionError extends Error {
 const createApplication = instrument(
   'actions.createApplication',
   async (params: ApplicationParams) => {
-    // Generate schema from name and pubkey hash
-    const hash = await sha256(hexToBytes(params.pubkey))
-    const schema = slugify(`${params.name}_${hash.slice(0, 4)}`)
+    const schema = slugify(`${params.name}_${randomId().slice(0, 4)}`)
 
     const application = await database.createApplication({
       ...params,
@@ -38,15 +37,14 @@ const createApplication = instrument(
         Name: application.name,
         Schema: application.schema,
         Npub: nip19.npubEncode(application.pubkey),
-        Metadata: Object.entries(application.metadata).map(([key, value]) => ({
-          Key: key,
-          Value: value,
-        })),
+        Metadata: getMetadata(application),
       })
     )
 
     if (error) {
       console.error(error)
+    } else {
+      console.log(`Created application ${schema}`)
     }
 
     return application
@@ -85,6 +83,8 @@ const approveApplication = instrument(
       if (adminError) {
         console.error(adminError)
       }
+    } else {
+      console.log(`Approved application ${application.schema}`)
     }
 
     return application
@@ -105,6 +105,8 @@ const rejectApplication = instrument(
       if (adminError) {
         console.error(adminError)
       }
+    } else {
+      console.log(`Rejected application ${application.schema}`)
     }
 
     return application

@@ -1,14 +1,15 @@
-import { formatTimestamp } from '@welshman/lib'
+import { formatTimestamp, sleep } from '@welshman/lib'
 import type { TrustedEvent } from '@welshman/util'
 import { DIRECT_MESSAGE, INBOX_RELAYS, MESSAGE, makeEvent, getRelayTagValues } from '@welshman/util'
 import { request, publish } from '@welshman/net'
 import { Nip59 } from '@welshman/signer'
 import * as nip19 from 'nostr-tools/nip19'
 import { actions } from './actions.js'
+import { getMetadata } from './domain.js'
 import { database } from './database.js'
 import { render } from './templates.js'
 import { ADMIN_RELAY, INDEXER_RELAYS, ADMIN_ROOM, RELAY_DOMAIN, appSigner } from './env.js'
-import { getPublishError } from './util.js'
+import { getPublishError, toTitleCase } from './util.js'
 
 const commands = {
   '/help': async (event: TrustedEvent) => {
@@ -51,10 +52,7 @@ const commands = {
           ...application,
           Host: application.schema + '.' + RELAY_DOMAIN,
           Npub: nip19.npubEncode(application.pubkey),
-          Metadata: Object.entries(application.metadata).map(([key, value]) => ({
-            Key: key,
-            Value: value,
-          })),
+          Metadata: getMetadata(application),
           CreatedDate: formatTimestamp(application.created_at),
           ApprovedDate: formatTimestamp(application.approved_at),
           RejectedDate: formatTimestamp(application.rejected_at),
@@ -67,7 +65,7 @@ const commands = {
     }
   },
   '/list': async (event: TrustedEvent) => {
-    const [_, limit = "10"] = event.content.match(/\/list\s*(\d*)/)
+    const [_, limit = "10"] = event.content.match(/\/list\s*(\d*)/) || []
 
     const applications = await database.listApplications(parseInt(limit))
 
@@ -86,6 +84,9 @@ const commands = {
 
 export const robot = {
   sendToAdmin: async (content: string) => {
+    // Make sure messages show up in order
+    await sleep(1000)
+
     const template = makeEvent(MESSAGE, { content, tags: [['h', ADMIN_ROOM]] })
     const event = await appSigner.sign(template)
     const results = await publish({ relays: [ADMIN_RELAY], event })
@@ -106,6 +107,9 @@ export const robot = {
     })
   },
   sendDirectMessage: async (pubkey: string, content: string, relays: string[]) => {
+    // Make sure messages show up in order
+    await sleep(1000)
+
     const nip59 = Nip59.fromSigner(appSigner)
     const template = makeEvent(DIRECT_MESSAGE, { content, tags: [['p', pubkey]] })
     const event = await nip59.wrap(pubkey, template)

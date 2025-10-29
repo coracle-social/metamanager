@@ -1,30 +1,24 @@
-Application: {{{name}}}
+Name: {{{name}}}
 Schema: {{{schema}}}
 Pubkey: nostr:{{{Npub}}}
 Created: {{{CreatedDate}}}
-
-Metadata:
 {{#Metadata}}
   {{{Key}}}: {{{Value}}}
 {{/Metadata}}
-
 {{#IsApproved}}
 ✓ APPROVED on {{{ApprovedDate}}}
 {{#approved_message}}
 Message: {{{approved_message}}}
 {{/approved_message}}
-
 Space URL: https://app.flotilla.social/join?r={{{Host}}}
 Relay URL: wss://{{{Host}}}
 {{/IsApproved}}
-
 {{#IsRejected}}
 ✗ REJECTED on {{{RejectedDate}}}
 {{#rejected_message}}
 Message: {{{rejected_message}}}
 {{/rejected_message}}
 {{/IsRejected}}
-
 {{^IsApproved}}{{^IsRejected}}
 Status: PENDING
 {{/IsRejected}}{{/IsApproved}}

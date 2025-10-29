@@ -41,3 +41,6 @@ export const getPublishError = (results: PublishResultsByRelay, message: string)
     return `${message}: ${errors.join('; ')}`
   }
 }
+
+export const toTitleCase = (s: string) =>
+  s.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())

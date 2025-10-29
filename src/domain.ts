@@ -1,3 +1,5 @@
+import {toTitleCase} from './util.js'
+
 export type ApplicationParams = {
   name: string
   pubkey: string
@@ -20,3 +22,7 @@ export type ApplicationRejectionParams = {
   schema: string
   message: string
 }
+
+export const getMetadata = (application: Application) =>
+  Object.entries(application.metadata)
+    .map(([key, value]) => ({Key: toTitleCase(key), Value: value}))
