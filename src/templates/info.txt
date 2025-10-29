@@ -2,23 +2,19 @@ ID: {{{schema}}}
 Name: {{{name}}}
 Pubkey: nostr:{{{Npub}}}
 Created: {{{CreatedDate}}}
+{{#IsApproved}}
+Space URL: https://app.flotilla.social/join?r={{{Host}}}
+Relay URL: wss://{{{Host}}}
+{{/IsApproved}}
 {{#Metadata}}
   {{{Key}}}: {{{Value}}}
 {{/Metadata}}
 {{#IsApproved}}
-✓ APPROVED on {{{ApprovedDate}}}
-{{#approved_message}}
-Message: {{{approved_message}}}
-{{/approved_message}}
-Space URL: https://app.flotilla.social/join?r={{{Host}}}
-Relay URL: wss://{{{Host}}}
+✓ Approved on {{{ApprovedDate}}}{{#approved_message}}"{{{approved_message}}}"{{/approved_message}}
 {{/IsApproved}}
 {{#IsRejected}}
-✗ REJECTED on {{{RejectedDate}}}
-{{#rejected_message}}
-Message: {{{rejected_message}}}
-{{/rejected_message}}
+✗ Rejected on {{{RejectedDate}}} {{#rejected_message}}"{{{rejected_message}}}"{{/rejected_message}}
 {{/IsRejected}}
 {{^IsApproved}}{{^IsRejected}}
-Status: PENDING
+Status is PENDING
 {{/IsRejected}}{{/IsApproved}}
