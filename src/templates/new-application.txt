@@ -1,4 +1,4 @@
-New application (Schema: {{{Schema}}}) "{{{Name}}}" from nostr:{{{Npub}}}
+New application (ID: `{{{Schema}}}`) "{{{Name}}}" from nostr:{{{Npub}}}
 
 {{#Metadata}}
 {{{Key}}}:

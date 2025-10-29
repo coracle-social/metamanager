@@ -1,4 +1,6 @@
 - `/help` - display this message
-- `/approve [id] [optional message]` - approve an application with an optional message to the applicant.
-- `/reject [id] [optional message]` - reject an application with an optional message to the applicant.
+- `/list [optional limit]` - lists `limit` most recent applications
 - `/info [id]` - displays information for the given application
+- `/reject [id] [optional message]` - reject an application with an optional message to the applicant.
+- `/approve [id] [optional message]` - approve an application with an optional message to the applicant.
+- `/delete [id]` - deletes the given application and deactivates the corresponding relay.

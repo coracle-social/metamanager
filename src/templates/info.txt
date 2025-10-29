@@ -1,5 +1,5 @@
+ID: {{{schema}}}
 Name: {{{name}}}
-Schema: {{{schema}}}
 Pubkey: nostr:{{{Npub}}}
 Created: {{{CreatedDate}}}
 {{#Metadata}}
