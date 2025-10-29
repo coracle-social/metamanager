@@ -146,10 +146,23 @@ const rejectApplication = instrument(
   }
 )
 
+const listApplications = instrument(
+  'database.listApplications',
+  async (limit = 10) => {
+    const rows = await all(
+      `SELECT * FROM application ORDER BY created_at DESC LIMIT ?`,
+      [limit]
+    )
+
+    return rows.map(parseApplication)
+  }
+)
+
 export const database = {
   migrate,
   getApplication,
   createApplication,
   approveApplication,
   rejectApplication,
+  listApplications,
 }

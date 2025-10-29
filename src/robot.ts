@@ -66,6 +66,22 @@ const commands = {
       robot.sendToAdmin(`Invalid application id: ${schema}`)
     }
   },
+  '/list': async (event: TrustedEvent) => {
+    const [_, limit = "10"] = event.content.match(/\/list\s*(\d*)/)
+
+    const applications = await database.listApplications(parseInt(limit))
+
+    robot.sendToAdmin(
+      await render('templates/list.txt', {
+        Applications: applications.map((app) => ({
+          Name: app.name,
+          Schema: app.schema,
+          CreatedDate: formatTimestamp(app.created_at),
+          Status: app.approved_at ? '✓' : app.rejected_at ? '✗' : '⋯',
+        })),
+      })
+    )
+  },
 }
 
 export const robot = {
