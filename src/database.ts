@@ -146,6 +146,15 @@ const rejectApplication = instrument(
   }
 )
 
+const deleteApplication = instrument(
+  'database.deleteApplication',
+  async (schema: string) => {
+    const application = await getApplication(schema)
+    await run(`DELETE FROM application WHERE schema = ?`, [schema])
+    return application
+  }
+)
+
 const listApplications = instrument(
   'database.listApplications',
   async (limit = 10) => {
@@ -164,5 +173,6 @@ export const database = {
   createApplication,
   approveApplication,
   rejectApplication,
+  deleteApplication,
   listApplications,
 }

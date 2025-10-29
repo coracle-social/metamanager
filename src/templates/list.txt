@@ -1,5 +1,5 @@
 {{#Applications}}
-{{{Status}}} {{{Schema}}} - "{{{Name}}}" (created {{{CreatedDate}}})
+- `{{{Schema}}}` "{{{Name}}}" ({{{Status}}})
 {{/Applications}}
 {{^Applications}}
 No applications found.

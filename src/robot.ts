@@ -65,7 +65,7 @@ const commands = {
     }
   },
   '/list': async (event: TrustedEvent) => {
-    const [_, limit = "10"] = event.content.match(/\/list\s*(\d*)/) || []
+    const [_, limit = "10"] = event.content.match(/\/list\s*(\d+)/) || []
 
     const applications = await database.listApplications(parseInt(limit))
 
@@ -74,11 +74,23 @@ const commands = {
         Applications: applications.map((app) => ({
           Name: app.name,
           Schema: app.schema,
-          CreatedDate: formatTimestamp(app.created_at),
-          Status: app.approved_at ? '✓' : app.rejected_at ? '✗' : '⋯',
+          Status: app.approved_at ? 'approved' : app.rejected_at ? 'rejected' : 'pending',
         })),
       })
     )
+  },
+  '/delete': async (event: TrustedEvent) => {
+    const [_, schema] = event.content.match(/\/delete (\w+)/) || []
+
+    const application = await database.getApplication(schema)
+
+    if (application) {
+      await actions.deleteApplication(schema)
+
+      robot.sendToAdmin(`Successfully deleted application ${schema}`)
+    } else {
+      robot.sendToAdmin(`Invalid application id: ${schema}`)
+    }
   },
 }
 

@@ -1,7 +1,7 @@
 import * as nip19 from 'nostr-tools/nip19'
 import { makeSecret } from '@welshman/signer'
 import { instrument } from 'succinct-async'
-import { writeFile } from 'fs/promises'
+import { writeFile, unlink } from 'fs/promises'
 import { join } from 'path'
 import { randomId } from '@welshman/lib'
 import { ADMIN_PUBKEYS, CONFIG_DIR, RELAY_DOMAIN } from './env.js'
@@ -113,8 +113,30 @@ const rejectApplication = instrument(
   }
 )
 
+const deleteApplication = instrument(
+  'actions.deleteApplication',
+  async (schema: string) => {
+    const application = await database.deleteApplication(schema)
+
+    // Delete config file if it exists
+    try {
+      await unlink(join(CONFIG_DIR, `${schema}.toml`))
+      console.log(`Deleted config file for ${schema}`)
+    } catch (err: any) {
+      if (err.code !== 'ENOENT') {
+        console.error(`Failed to delete config file for ${schema}:`, err)
+      }
+    }
+
+    console.log(`Deleted application ${schema}`)
+
+    return application
+  }
+)
+
 export const actions = {
   createApplication,
   approveApplication,
   rejectApplication,
+  deleteApplication,
 }
