@@ -1,5 +1,5 @@
-Congratulations! Your application to start a community space has been approved. {{{Message}}}
+Congratulations! Your application to start a BitcoinWalk meetup has been approved. {{{Message}}}
 
 To access your community, visit https://app.flotilla.social/join?r={{{Host}}} and log in with nostr. From there, you can generate an invite code that you can share with people interested in joining your group!
 
-Don't hesitate to get in touch if you need anything. A great place to start is by joining our space for community organizers at https://app.flotilla.social/join?r=meta.spaces.coracle.social&c=LE7S3IA2.
+Don't hesitate to get in touch if you need anything. A great place to start is by joining our space for community organizers at https://app.flotilla.social/join?r=meta.bitcoinwalk.org&c=6NDI3R0X.
