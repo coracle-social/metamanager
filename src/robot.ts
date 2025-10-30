@@ -1,7 +1,7 @@
 import { formatTimestamp, sleep } from '@welshman/lib'
 import type { TrustedEvent } from '@welshman/util'
 import { DIRECT_MESSAGE, INBOX_RELAYS, MESSAGE, makeEvent, getRelayTagValues } from '@welshman/util'
-import { request, publish } from '@welshman/net'
+import { load, request, publish } from '@welshman/net'
 import { Nip59 } from '@welshman/signer'
 import * as nip19 from 'nostr-tools/nip19'
 import { actions } from './actions.js'
@@ -139,8 +139,7 @@ export const robot = {
   loadMessagingRelays: async (pubkey: string) => {
     let relays = ['wss://auth.nostr1.com/', 'wss://inbox.nostr.wine/']
 
-    await request({
-      autoClose: true,
+    await load({
       relays: INDEXER_RELAYS,
       filters: [{ kinds: [INBOX_RELAYS], authors: [pubkey] }],
       onEvent: (event: TrustedEvent) => {
