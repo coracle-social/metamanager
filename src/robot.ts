@@ -108,13 +108,15 @@ export const robot = {
     return getPublishError(results, `Failed to message to admin`)
   },
   listenToAdmin: () => {
+    console.log(`Listening to messages at ${ADMIN_RELAY}'${ADMIN_ROOM}`)
+
     request({
       relays: [ADMIN_RELAY],
       filters: [{ kinds: [MESSAGE], '#h': [ADMIN_ROOM], limit: 0 }],
       onEvent: (event: TrustedEvent) => {
         for (const [command, handler] of Object.entries(commands)) {
           if (event.content.startsWith(command)) {
-            console.log(`Received message from admin: ${command}`)
+            console.log(`Received message from admin: ${event.content.slice(0, 50).replace('\n', '')}`)
             handler(event)
           }
         }
