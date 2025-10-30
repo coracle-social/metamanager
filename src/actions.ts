@@ -4,10 +4,11 @@ import { instrument } from 'succinct-async'
 import { writeFile, unlink } from 'fs/promises'
 import { join } from 'path'
 import { randomId } from '@welshman/lib'
-import { ADMIN_PUBKEYS, CONFIG_DIR, RELAY_DOMAIN } from './env.js'
+import { ADMIN_PUBKEYS, REQUIRE_APPROVAL, CONFIG_DIR, RELAY_DOMAIN } from './env.js'
 import { slugify } from './util.js'
 import { getMetadata } from './domain.js'
 import type {
+  Application,
   ApplicationParams,
   ApplicationApprovalParams,
   ApplicationRejectionParams,
@@ -33,29 +34,37 @@ const createApplication = instrument(
     if (!params.metadata) return "A metadata object is required"
     if (params.schema !== slugify(params.schema)) return "That is an invalid schema"
 
+    let application: Application
+
     try {
-      const application = await database.createApplication(params as ApplicationParams)
-
-      const error = await robot.sendToAdmin(
-        await render('templates/new-application.txt', {
-          Name: application.name,
-          Schema: application.schema,
-          Npub: nip19.npubEncode(application.pubkey),
-          Metadata: getMetadata(application),
-        })
-      )
-
-      if (error) {
-        console.error(error)
-      } else {
-        console.log(`Created application ${application.schema}`)
-      }
+      application = await database.createApplication(params as ApplicationParams)
     } catch (e: any) {
       if (e.code === 'SQLITE_CONSTRAINT') {
         return "that schema is already in use"
       }
 
       throw e
+    }
+
+    const error = await robot.sendToAdmin(
+      await render('templates/new-application.txt', {
+        Name: application.name,
+        Schema: application.schema,
+        Npub: nip19.npubEncode(application.pubkey),
+        Metadata: getMetadata(application),
+      })
+    )
+
+    if (error) {
+      console.error(error)
+    } else {
+      console.log(`Created application ${application.schema}`)
+    }
+
+    if (!REQUIRE_APPROVAL) {
+      await approveApplication({schema: application.schema, message: ""})
+
+      console.log(`Automatically approved application ${application.schema}`)
     }
   }
 )

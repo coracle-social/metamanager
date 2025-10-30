@@ -28,6 +28,7 @@ export const ADMIN_RELAY = normalizeRelayUrl(process.env.ADMIN_RELAY)
 export const ADMIN_PUBKEYS = fromCsv(process.env.ADMIN_PUBKEYS)
 export const RELAY_DOMAIN = fromCsv(process.env.RELAY_DOMAIN)
 export const INDEXER_RELAYS = fromCsv(process.env.INDEXER_RELAYS).map(normalizeRelayUrl)
+export const REQUIRE_APPROVAL = process.env.REQUIRE_APPROVAL === 'true'
 
 export const appSigner = Nip01Signer.fromSecret(process.env.SECRET_KEY)
 
