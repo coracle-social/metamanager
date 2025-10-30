@@ -99,7 +99,7 @@ export const robot = {
     // Make sure messages show up in order
     await sleep(1000)
 
-    console.log(`Sending message to admin: ${content.slice(0, 50).replace('\n', ' ')}...`)
+    console.log(`Sending message to admin: ${content.slice(0, 50).replace(/\n/g, ' ')}...`)
 
     const template = makeEvent(MESSAGE, { content, tags: [['h', ADMIN_ROOM]] })
     const event = await appSigner.sign(template)
@@ -116,7 +116,7 @@ export const robot = {
       onEvent: (event: TrustedEvent) => {
         for (const [command, handler] of Object.entries(commands)) {
           if (event.content.startsWith(command)) {
-            console.log(`Received message from admin: ${event.content.slice(0, 50).replace('\n', '')}`)
+            console.log(`Received message from admin: ${event.content.slice(0, 50).replace(/\n/g, '')}`)
             handler(event)
           }
         }
@@ -127,7 +127,7 @@ export const robot = {
     // Make sure messages show up in order
     await sleep(1000)
 
-    console.log(`Sending DM to pubkey: ${content.slice(0, 50).replace('\n', ' ')}...`)
+    console.log(`Sending DM to pubkey: ${content.slice(0, 50).replace(/\n/g, ' ')}...`)
 
     const nip59 = Nip59.fromSigner(appSigner)
     const template = makeEvent(DIRECT_MESSAGE, { content, tags: [['p', pubkey]] })

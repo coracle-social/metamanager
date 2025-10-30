@@ -24,12 +24,17 @@ export class ActionError extends Error {
 
 const createApplication = instrument(
   'actions.createApplication',
-  async (params: ApplicationParams) => {
+  async (params: Partial<ApplicationParams>) => {
+    if (!params.name) return "A name for your space is required"
+    if (!params.image) return "An image for your space is required"
+    if (!params.schema) return "A schema name is required"
+    if (params.pubkey?.length !== 64) return "A valid pubkey is required"
+    if (!params.description) return "A description is required"
+    if (!params.metadata) return "A metadata object is required"
+    if (params.schema !== slugify(params.schema)) return "That is an invalid schema"
+
     try {
-      const application = await database.createApplication({
-        ...params,
-        schema: slugify(params.name),
-      })
+      const application = await database.createApplication(params as ApplicationParams)
 
       const error = await robot.sendToAdmin(
         await render('templates/new-application.txt', {
@@ -47,7 +52,7 @@ const createApplication = instrument(
       }
     } catch (e: any) {
       if (e.code === 'SQLITE_CONSTRAINT') {
-        return "that name is already in use"
+        return "that schema is already in use"
       }
 
       throw e
