@@ -1,12 +1,12 @@
-host = "{{Host}}"
-schema = "{{Schema}}"
-secret = "{{Secret}}"
+host = "{{{Host}}}"
+schema = "{{{Schema}}}"
+secret = "{{{Secret}}}"
 
 [info]
-name = "{{Name}}"
-icon = "{{Image}}"
-pubkey = "{{Pubkey}}"
-description = "{{Description}}"
+name = "{{{Name}}}"
+icon = "{{{Image}}}"
+pubkey = "{{{Pubkey}}}"
+description = "{{{Description}}}"
 
 [management]
 enabled = true
