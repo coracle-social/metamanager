@@ -99,6 +99,8 @@ export const robot = {
     // Make sure messages show up in order
     await sleep(1000)
 
+    console.log(`Sending message to admin: ${content.slice(0, 50).replace('\n', ' ')}...`)
+
     const template = makeEvent(MESSAGE, { content, tags: [['h', ADMIN_ROOM]] })
     const event = await appSigner.sign(template)
     const results = await publish({ relays: [ADMIN_RELAY], event })
@@ -112,6 +114,7 @@ export const robot = {
       onEvent: (event: TrustedEvent) => {
         for (const [command, handler] of Object.entries(commands)) {
           if (event.content.startsWith(command)) {
+            console.log(`Received message from admin: ${command}`)
             handler(event)
           }
         }
@@ -121,6 +124,8 @@ export const robot = {
   sendDirectMessage: async (pubkey: string, content: string, relays: string[]) => {
     // Make sure messages show up in order
     await sleep(1000)
+
+    console.log(`Sending DM to pubkey: ${content.slice(0, 50).replace('\n', ' ')}...`)
 
     const nip59 = Nip59.fromSigner(appSigner)
     const template = makeEvent(DIRECT_MESSAGE, { content, tags: [['p', pubkey]] })
