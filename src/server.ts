@@ -47,9 +47,9 @@ const addRoute = (method: 'get' | 'post', path: string, handler: Handler) => {
 }
 
 addRoute('post', '/apply', async (req: Request, res: Response) => {
-  await actions.createApplication(req.body as ApplicationParams)
+  const error = await actions.createApplication(req.body as ApplicationParams)
 
-  res.json({ success: true })
+  res.json({ error })
 })
 
 server.use((err: Error, req: Request, res: Response, next: NextFunction) => {

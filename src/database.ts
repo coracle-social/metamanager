@@ -84,6 +84,8 @@ const migrate = () =>
             schema TEXT PRIMARY KEY,
             pubkey TEXT NOT NULL,
             name TEXT NOT NULL,
+            image TEXT NOT NULL,
+            description TEXT NOT NULL,
             metadata TEXT NOT NULL CHECK(json_valid(metadata)),
             created_at INTEGER NOT NULL,
             approved_at INTEGER,
@@ -93,6 +95,7 @@ const migrate = () =>
           )
         `
         )
+
         resolve()
       })
     } catch (err) {
@@ -109,11 +112,11 @@ const getApplication = instrument('database.getApplication', async (schema: stri
 
 const createApplication = instrument(
   'database.createApplication',
-  async ({ schema, pubkey, name, metadata }: ApplicationParams & { schema: string }) => {
+  async ({ schema, pubkey, name, image, description, metadata }: ApplicationParams & { schema: string }) => {
     const row = await get(
-      `INSERT INTO application (schema, pubkey, name, metadata, created_at)
-       VALUES (?, ?, ?, ?, unixepoch()) RETURNING *`,
-      [schema, pubkey, name, JSON.stringify(metadata)]
+      `INSERT INTO application (schema, pubkey, name, image, description, metadata, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, unixepoch()) RETURNING *`,
+      [schema, pubkey, name, image, description, JSON.stringify(metadata)]
     )
 
     return assertResult(parseApplication(row))

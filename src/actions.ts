@@ -25,29 +25,33 @@ export class ActionError extends Error {
 const createApplication = instrument(
   'actions.createApplication',
   async (params: ApplicationParams) => {
-    const schema = slugify(`${params.name}_${randomId().slice(0, 4)}`)
-
-    const application = await database.createApplication({
-      ...params,
-      schema,
-    })
-
-    const error = await robot.sendToAdmin(
-      await render('templates/new-application.txt', {
-        Name: application.name,
-        Schema: application.schema,
-        Npub: nip19.npubEncode(application.pubkey),
-        Metadata: getMetadata(application),
+    try {
+      const application = await database.createApplication({
+        ...params,
+        schema: slugify(params.name),
       })
-    )
 
-    if (error) {
-      console.error(error)
-    } else {
-      console.log(`Created application ${schema}`)
+      const error = await robot.sendToAdmin(
+        await render('templates/new-application.txt', {
+          Name: application.name,
+          Schema: application.schema,
+          Npub: nip19.npubEncode(application.pubkey),
+          Metadata: getMetadata(application),
+        })
+      )
+
+      if (error) {
+        console.error(error)
+      } else {
+        console.log(`Created application ${application.schema}`)
+      }
+    } catch (e: any) {
+      if (e.code === 'SQLITE_CONSTRAINT') {
+        return "that name is already in use"
+      }
+
+      throw e
     }
-
-    return application
   }
 )
 
@@ -63,8 +67,9 @@ const approveApplication = instrument(
       Host: host,
       Secret: makeSecret(),
       Schema: application.schema,
-      Name: `BitcoinWalk ${application.name}`,
-      Description: `A BitcoinWalk community for ${application.name}`,
+      Name: application.name,
+      Image: application.image,
+      Description: application.description,
       AdminPubkeys: JSON.stringify(ADMIN_PUBKEYS),
       Pubkey: application.pubkey,
     })
@@ -86,8 +91,6 @@ const approveApplication = instrument(
     } else {
       console.log(`Approved application ${application.schema}`)
     }
-
-    return application
   }
 )
 
@@ -129,8 +132,6 @@ const deleteApplication = instrument(
     }
 
     console.log(`Deleted application ${schema}`)
-
-    return application
   }
 )
 

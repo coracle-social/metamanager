@@ -4,7 +4,7 @@ secret = "{{Secret}}"
 
 [info]
 name = "{{Name}}"
-icon = "https://bitcoinwalk.org/wp-content/uploads/2025/04/cropped-Bitcoin-Walk-Logo-avatar.png"
+icon = "{{Image}}"
 pubkey = "{{Pubkey}}"
 description = "{{Description}}"
 
