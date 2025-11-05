@@ -16,7 +16,6 @@ if (!process.env.DATABASE_PATH) throw new Error('DATABASE_PATH is not defined.')
 if (!process.env.SECRET_KEY) throw new Error('SECRET_KEY is not defined.')
 if (!process.env.ADMIN_ROOM) throw new Error('ADMIN_ROOM is not defined.')
 if (!process.env.ADMIN_RELAY) throw new Error('ADMIN_RELAY is not defined.')
-if (!process.env.ADMIN_PUBKEYS) throw new Error('ADMIN_PUBKEYS is not defined.')
 if (!process.env.RELAY_DOMAIN) throw new Error('RELAY_DOMAIN is not defined.')
 if (!process.env.INDEXER_RELAYS) throw new Error('INDEXER_RELAYS is not defined.')
 
