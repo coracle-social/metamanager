@@ -3,7 +3,6 @@ import { makeSecret } from '@welshman/signer'
 import { instrument } from 'succinct-async'
 import { writeFile, unlink } from 'fs/promises'
 import { join } from 'path'
-import { randomId } from '@welshman/lib'
 import { ADMIN_PUBKEYS, REQUIRE_APPROVAL, CONFIG_DIR, RELAY_DOMAIN } from './env.js'
 import { slugify } from './util.js'
 import { getMetadata } from './domain.js'
@@ -135,17 +134,21 @@ const deleteApplication = instrument(
   async (schema: string) => {
     const application = await database.deleteApplication(schema)
 
-    // Delete config file if it exists
-    try {
-      await unlink(join(CONFIG_DIR, `${schema}.toml`))
-      console.log(`Deleted config file for ${schema}`)
-    } catch (err: any) {
-      if (err.code !== 'ENOENT') {
-        console.error(`Failed to delete config file for ${schema}:`, err)
+    if (application) {
+      // Delete config file if it exists
+      try {
+        await unlink(join(CONFIG_DIR, `${application.schema}.toml`))
+        console.log(`Deleted config file for ${application.schema}`)
+      } catch (err: any) {
+        if (err.code !== 'ENOENT') {
+          console.error(`Failed to delete config file for ${application.schema}:`, err)
+        }
       }
-    }
 
-    console.log(`Deleted application ${schema}`)
+      console.log(`Deleted application ${application.schema}`)
+    } else {
+      console.log(`Application not found: ${schema}`)
+    }
   }
 )
 

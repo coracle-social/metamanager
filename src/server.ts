@@ -2,7 +2,6 @@ import { instrument } from 'succinct-async'
 import express, { Request, Response, NextFunction } from 'express'
 import rateLimit from 'express-rate-limit'
 import { actions, ActionError } from './actions.js'
-import type { ApplicationParams } from './domain.js'
 
 // Endpoints
 

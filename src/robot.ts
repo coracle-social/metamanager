@@ -1,6 +1,6 @@
-import { formatTimestamp, sleep } from '@welshman/lib'
+import { formatTimestamp, uniq, sleep } from '@welshman/lib'
 import type { TrustedEvent } from '@welshman/util'
-import { DIRECT_MESSAGE, INBOX_RELAYS, MESSAGE, makeEvent, getRelayTagValues } from '@welshman/util'
+import { DIRECT_MESSAGE, INBOX_RELAYS, MESSAGE, RELAYS, PROFILE, makeEvent, getRelayTagValues } from '@welshman/util'
 import { load, request, publish } from '@welshman/net'
 import { Nip59 } from '@welshman/signer'
 import * as nip19 from 'nostr-tools/nip19'
@@ -8,8 +8,8 @@ import { actions } from './actions.js'
 import { getMetadata } from './domain.js'
 import { database } from './database.js'
 import { render } from './templates.js'
-import { ADMIN_RELAY, INDEXER_RELAYS, ADMIN_ROOM, RELAY_DOMAIN, appSigner } from './env.js'
-import { getPublishError, toTitleCase } from './util.js'
+import { ADMIN_RELAY, INDEXER_RELAYS, ADMIN_ROOM, RELAY_DOMAIN, BOT_META, BOT_RELAYS, BOT_DM_RELAYS, appSigner } from './env.js'
+import { getPublishError, } from './util.js'
 
 const commands = {
   '/help': async (event: TrustedEvent) => {
@@ -95,6 +95,32 @@ const commands = {
 }
 
 export const robot = {
+  publishMeta: async () => {
+    const relays = uniq([ADMIN_RELAY, ...INDEXER_RELAYS, ...BOT_RELAYS])
+
+    await publish({
+      relays,
+      event: await appSigner.sign(
+        makeEvent(RELAYS, {
+          tags: BOT_RELAYS.map(url => ["r", url]),
+        })
+      ),
+    })
+
+    await publish({
+      relays,
+      event: await appSigner.sign(
+        makeEvent(INBOX_RELAYS, {
+          tags: BOT_DM_RELAYS.map(url => ["relay", url]),
+        })
+      ),
+    })
+
+    await publish({
+      relays,
+      event: await appSigner.sign(makeEvent(PROFILE, {content: BOT_META})),
+    })
+  },
   sendToAdmin: async (content: string) => {
     // Make sure messages show up in order
     await sleep(1000)
