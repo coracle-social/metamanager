@@ -2,6 +2,4 @@ Congratulations! Your application to start a community space has been approved. 
 
 To access your community, visit https://app.flotilla.social/join?r={{{Host}}} and log in with nostr. From there, you can generate an invite code that you can share with people interested in joining your group!
 
-To manage your community, please visit https://landlubber.coracle.social and enter your relay URL: wss://{{{Host}}}.
-
 Don't hesitate to get in touch if you need anything. A great place to start is by joining our space for community organizers at https://app.flotilla.social/join?r=organizers.spaces.coracle.social&c=Y6DKSPR0.
