@@ -2,6 +2,21 @@
 
 A system for receiving applications from potential community organizers and processing them.
 
+## Usage
+
+A new relay can be requested by sending a POST to the `/apply` endpoint, which accepts a JSON-encoded object with the following parameters:
+
+  `name` - the name of the relay
+  `image` - the relay icon
+  `schema` - a slug identifying the relay
+  `pubkey` - the owner's pubkey
+  `description` - the relays description
+  `metadata` - additional arbitrary metadata
+
+A message will then be sent to the `ADMIN_ROOM` on `ADMIN_RELAY` notifying admins of the new request. If `REQUIRE_APPROVAL` is configured, an admin must run `/approve <slug>` to approve the request, otherwise it is automatically approved.
+
+Upon approval the relay will exist at `<slug>.<RELAY_DOMAIN>`. A NIP 17 DM will be sent to the applicant `pubkey` containing information for accessing the relay.
+
 ## Running
 
 ```sh
