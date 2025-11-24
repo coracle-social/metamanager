@@ -25,6 +25,9 @@ if (!process.env.BOT_RELAYS) throw new Error('BOT_RELAYS is not defined.')
 if (!process.env.BOT_DM_RELAYS) throw new Error('BOT_DM_RELAYS is not defined.')
 
 export const PORT = process.env.PORT
+export const NWC_URL = process.env.NWC_URL || ''
+export const SATS_PER_MONTH = parseInt(process.env.SATS_PER_MONTH || '0')
+export const TRIAL_DAYS = parseInt(process.env.TRIAL_DAYS || '0')
 export const CONFIG_DIR = process.env.CONFIG_DIR
 export const DATABASE_PATH = process.env.DATABASE_PATH
 export const ADMIN_ROOM = process.env.ADMIN_ROOM

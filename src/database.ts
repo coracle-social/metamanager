@@ -91,10 +91,13 @@ const migrate = () =>
             approved_at INTEGER,
             approved_message TEXT,
             rejected_at INTEGER,
-            rejected_message TEXT
+            rejected_message TEXT,
+            invoice TEXT
           )
         `
         )
+
+        await addColumnIfNotExists('application', 'invoice', 'TEXT')
 
         resolve()
       })
@@ -112,11 +115,11 @@ const getApplication = instrument('database.getApplication', async (schema: stri
 
 const createApplication = instrument(
   'database.createApplication',
-  async ({ schema, pubkey, name, image, description, metadata }: ApplicationParams & { schema: string }) => {
+  async ({ schema, pubkey, name, image, description, metadata, invoice }: ApplicationParams & { schema: string }) => {
     const row = await get(
-      `INSERT INTO application (schema, pubkey, name, image, description, metadata, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, unixepoch()) RETURNING *`,
-      [schema, pubkey, name, image, description, JSON.stringify(metadata)]
+      `INSERT INTO application (schema, pubkey, name, image, description, metadata, invoice, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, unixepoch()) RETURNING *`,
+      [schema, pubkey, name, image || '', description, JSON.stringify(metadata), invoice || '']
     )
 
     return assertResult(parseApplication(row))

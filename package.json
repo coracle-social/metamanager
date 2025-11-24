@@ -25,6 +25,8 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@getalby/lightning-tools": "^6.0.0",
+    "@getalby/sdk": "^7.0.0",
     "@types/node": "^22.18.1",
     "@welshman/lib": "^0.5.1",
     "@welshman/net": "^0.5.1",

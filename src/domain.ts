@@ -2,11 +2,12 @@ import {toTitleCase} from './util.js'
 
 export type ApplicationParams = {
   name: string
-  image: string
+  image?: string
   schema: string
   pubkey: string
   description: string
   metadata: Record<string, string>
+  invoice?: string
 }
 
 export type Application = ApplicationParams & {

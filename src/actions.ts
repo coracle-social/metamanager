@@ -3,7 +3,9 @@ import { makeSecret } from '@welshman/signer'
 import { instrument } from 'succinct-async'
 import { writeFile, unlink } from 'fs/promises'
 import { join } from 'path'
-import { ADMIN_PUBKEYS, REQUIRE_APPROVAL, CONFIG_DIR, RELAY_DOMAIN } from './env.js'
+import { NWCClient } from '@getalby/sdk/nwc'
+import { Invoice } from '@getalby/lightning-tools/bolt11'
+import { ADMIN_PUBKEYS, REQUIRE_APPROVAL, CONFIG_DIR, RELAY_DOMAIN, NWC_URL, SATS_PER_MONTH, TRIAL_DAYS } from './env.js'
 import { slugify } from './util.js'
 import { getMetadata } from './domain.js'
 import type {
@@ -26,12 +28,43 @@ const createApplication = instrument(
   'actions.createApplication',
   async (params: Partial<ApplicationParams>) => {
     if (!params.name) return "A name for your space is required"
-    if (!params.image) return "An image for your space is required"
     if (!params.schema) return "A schema name is required"
     if (params.pubkey?.length !== 64) return "A valid pubkey is required"
     if (!params.description) return "A description is required"
     if (!params.metadata) return "A metadata object is required"
     if (params.schema !== slugify(params.schema)) return "That is an invalid schema"
+
+    // Check if payment is required (no trial and payment is configured)
+    if (SATS_PER_MONTH > 0 && TRIAL_DAYS === 0) {
+      if (!params.invoice) {
+        return "Payment is required. Please provide a paid invoice."
+      }
+
+      try {
+        // Decode the invoice to get the payment hash
+        const decodedInvoice = new Invoice({ pr: params.invoice })
+        const paymentHash = decodedInvoice.paymentHash
+
+        if (!paymentHash) {
+          return "Invalid invoice provided"
+        }
+
+        if (!NWC_URL) {
+          return "Payment system not configured"
+        }
+
+        const nwc = new NWCClient({ nostrWalletConnectUrl: NWC_URL })
+
+        const lookupResult = await nwc.lookupInvoice({ payment_hash: paymentHash })
+
+        if (lookupResult.state !== "settled") {
+          return "Invoice has not been paid yet"
+        }
+      } catch (error: any) {
+        console.error('Failed to verify invoice:', error)
+        return "Failed to verify invoice payment"
+      }
+    }
 
     let application: Application
 
@@ -81,7 +114,7 @@ const approveApplication = instrument(
       Secret: makeSecret(),
       Schema: application.schema,
       Name: application.name,
-      Image: application.image,
+      Image: application.image || '',
       Description: application.description,
       AdminPubkeys: JSON.stringify(ADMIN_PUBKEYS),
       Pubkey: application.pubkey,

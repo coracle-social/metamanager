@@ -1,7 +1,9 @@
 import { instrument } from 'succinct-async'
 import express, { Request, Response, NextFunction } from 'express'
 import rateLimit from 'express-rate-limit'
+import { NWCClient } from '@getalby/sdk/nwc'
 import { actions, ActionError } from './actions.js'
+import { NWC_URL, SATS_PER_MONTH } from './env.js'
 
 // Endpoints
 
@@ -44,6 +46,30 @@ const addRoute = (method: 'get' | 'post', path: string, handler: Handler) => {
     })
   )
 }
+
+addRoute('get', '/invoice', async (req: Request, res: Response) => {
+  if (SATS_PER_MONTH === 0) {
+    return res.json({ invoice: null })
+  }
+
+  if (!NWC_URL) {
+    return res.status(500).json({ error: 'Payment system not configured' })
+  }
+
+  try {
+    const nwc = new NWCClient({ nostrWalletConnectUrl: NWC_URL })
+
+    const result = await nwc.makeInvoice({
+      amount: SATS_PER_MONTH * 1000, // Convert sats to millisats
+      description: 'Relay subscription payment',
+    })
+
+    res.json({ invoice: result.invoice })
+  } catch (error: any) {
+    console.error('Failed to generate invoice:', error)
+    res.status(500).json({ error: 'Failed to generate invoice' })
+  }
+})
 
 addRoute('post', '/apply', async (req: Request, res: Response) => {
   const error = await actions.createApplication(req.body)
