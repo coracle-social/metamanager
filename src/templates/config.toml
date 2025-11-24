@@ -11,6 +11,9 @@ description = "{{{Description}}}"
 [management]
 enabled = true
 
+[groups]
+enabled = true
+
 [roles.member]
 can_invite = true
 
