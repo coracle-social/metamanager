@@ -36,16 +36,9 @@ const createApplication = instrument(
     if (!params.metadata) return "A metadata object is required"
     if (params.schema !== slugify(params.schema)) return "That is an invalid schema"
 
-    // Check if payment is required (no trial and payment is configured)
-    if (SATS_PER_MONTH > 0 && TRIAL_DAYS === 0) {
-      if (!params.invoice) {
-        return "Payment is required. Please provide a paid invoice."
-      }
-
+    if (params.invoice) {
       try {
-        // Decode the invoice to get the payment hash
-        const decodedInvoice = new Invoice({ pr: params.invoice })
-        const paymentHash = decodedInvoice.paymentHash
+        const {paymentHash} = new Invoice({ pr: params.invoice })
 
         if (!paymentHash) {
           return "Invalid invoice provided"
@@ -56,16 +49,17 @@ const createApplication = instrument(
         }
 
         const nwc = new NWCClient({ nostrWalletConnectUrl: NWC_URL })
+        const result = await nwc.lookupInvoice({ payment_hash: paymentHash })
 
-        const lookupResult = await nwc.lookupInvoice({ payment_hash: paymentHash })
-
-        if (lookupResult.state !== "settled") {
+        if (result.state !== "settled") {
           return "Invoice has not been paid yet"
         }
       } catch (error: any) {
         console.error('Failed to verify invoice:', error)
         return "Failed to verify invoice payment"
       }
+    } else if (SATS_PER_MONTH > 0 && TRIAL_DAYS === 0) {
+      return "Payment is required. Please provide a paid invoice."
     }
 
     let application: Application
