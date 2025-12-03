@@ -29,6 +29,8 @@ const createApplication = instrument(
   async (params: Partial<ApplicationParams>) => {
     if (!params.name) return "A name for your space is required"
     if (!params.schema) return "A schema name is required"
+    if (params.schema.match(/^[0-9]/)) return "Schema must not begin with a number"
+    if (!params.schema.match(/^[a-z][0-9a-z]*$/)) return "Schema is invalid"
     if (params.pubkey?.length !== 64) return "A valid pubkey is required"
     if (!params.description) return "A description is required"
     if (!params.metadata) return "A metadata object is required"
