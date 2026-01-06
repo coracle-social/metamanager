@@ -4,7 +4,6 @@ import { parseJson } from '@welshman/lib'
 import type { StampedEvent } from '@welshman/util'
 import { normalizeRelayUrl } from '@welshman/util'
 import type { Socket } from '@welshman/net'
-import { defaultSocketPolicies, makeSocketPolicyAuth } from '@welshman/net'
 import { fromCsv } from './util.js'
 
 // Load .env.template first for defaults, then .env for overrides
@@ -32,7 +31,7 @@ export const CONFIG_DIR = process.env.CONFIG_DIR
 export const DATABASE_PATH = process.env.DATABASE_PATH
 export const ADMIN_ROOM = process.env.ADMIN_ROOM
 export const ADMIN_RELAY = normalizeRelayUrl(process.env.ADMIN_RELAY)
-export const ADMIN_PUBKEYS = fromCsv(process.env.ADMIN_PUBKEYS || "")
+export const ADMIN_PUBKEYS = fromCsv(process.env.ADMIN_PUBKEYS || '')
 export const RELAY_DOMAIN = fromCsv(process.env.RELAY_DOMAIN)
 export const INDEXER_RELAYS = fromCsv(process.env.INDEXER_RELAYS).map(normalizeRelayUrl)
 export const REQUIRE_APPROVAL = process.env.REQUIRE_APPROVAL === 'true'
@@ -45,10 +44,3 @@ export const appSigner = Nip01Signer.fromSecret(process.env.SECRET_KEY)
 appSigner.getPubkey().then((pubkey) => {
   console.log(`Running as ${pubkey}`)
 })
-
-defaultSocketPolicies.push(
-  makeSocketPolicyAuth({
-    sign: (event: StampedEvent) => appSigner.sign(event),
-    shouldAuth: (socket: Socket) => true,
-  })
-)

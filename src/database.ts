@@ -115,7 +115,15 @@ const getApplication = instrument('database.getApplication', async (schema: stri
 
 const createApplication = instrument(
   'database.createApplication',
-  async ({ schema, pubkey, name, image, description, metadata, invoice }: ApplicationParams & { schema: string }) => {
+  async ({
+    schema,
+    pubkey,
+    name,
+    image,
+    description,
+    metadata,
+    invoice,
+  }: ApplicationParams & { schema: string }) => {
     const row = await get(
       `INSERT INTO application (schema, pubkey, name, image, description, metadata, invoice, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, unixepoch()) RETURNING *`,
@@ -152,26 +160,17 @@ const rejectApplication = instrument(
   }
 )
 
-const deleteApplication = instrument(
-  'database.deleteApplication',
-  async (schema: string) => {
-    const application = await getApplication(schema)
-    await run(`DELETE FROM application WHERE schema = ?`, [schema])
-    return application
-  }
-)
+const deleteApplication = instrument('database.deleteApplication', async (schema: string) => {
+  const application = await getApplication(schema)
+  await run(`DELETE FROM application WHERE schema = ?`, [schema])
+  return application
+})
 
-const listApplications = instrument(
-  'database.listApplications',
-  async (limit = 10) => {
-    const rows = await all(
-      `SELECT * FROM application ORDER BY created_at DESC LIMIT ?`,
-      [limit]
-    )
+const listApplications = instrument('database.listApplications', async (limit = 10) => {
+  const rows = await all(`SELECT * FROM application ORDER BY created_at DESC LIMIT ?`, [limit])
 
-    return rows.map(parseApplication)
-  }
-)
+  return rows.map(parseApplication)
+})
 
 export const database = {
   migrate,

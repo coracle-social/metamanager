@@ -1,15 +1,61 @@
 import { formatTimestamp, uniq, sleep } from '@welshman/lib'
-import type { TrustedEvent } from '@welshman/util'
-import { DIRECT_MESSAGE, INBOX_RELAYS, MESSAGE, RELAYS, PROFILE, makeEvent, getRelayTagValues } from '@welshman/util'
-import { load, request, publish } from '@welshman/net'
+import type { TrustedEvent, StampedEvent } from '@welshman/util'
+import {
+  DIRECT_MESSAGE,
+  MESSAGING_RELAYS,
+  MESSAGE,
+  RELAYS,
+  PROFILE,
+  makeEvent,
+  getRelayTagValues,
+  normalizeRelayUrl,
+} from '@welshman/util'
+import {
+  request,
+  publish,
+  Pool,
+  Socket,
+  defaultSocketPolicies,
+  makeSocketPolicyAuth,
+} from '@welshman/net'
 import { Nip59 } from '@welshman/signer'
 import * as nip19 from 'nostr-tools/nip19'
 import { actions } from './actions.js'
 import { getMetadata } from './domain.js'
 import { database } from './database.js'
 import { render } from './templates.js'
-import { ADMIN_RELAY, INDEXER_RELAYS, ADMIN_ROOM, RELAY_DOMAIN, BOT_META, BOT_RELAYS, BOT_DM_RELAYS, appSigner } from './env.js'
-import { getPublishError, } from './util.js'
+import {
+  ADMIN_RELAY,
+  INDEXER_RELAYS,
+  ADMIN_ROOM,
+  RELAY_DOMAIN,
+  BOT_META,
+  BOT_RELAYS,
+  BOT_DM_RELAYS,
+  appSigner,
+} from './env.js'
+import { getPublishError } from './util.js'
+
+const authPolicy = makeSocketPolicyAuth({
+  sign: (event: StampedEvent) => appSigner.sign(event),
+  shouldAuth: (socket: Socket) => true,
+})
+
+const pool = new Pool({
+  makeSocket: (url: string) => {
+    const socket = new Socket(url)
+
+    for (const applyPolicy of defaultSocketPolicies) {
+      applyPolicy(socket)
+    }
+
+    authPolicy(socket)
+
+    return socket
+  },
+})
+
+const context = { pool }
 
 const commands = {
   '/help': async (event: TrustedEvent) => {
@@ -65,7 +111,7 @@ const commands = {
     }
   },
   '/list': async (event: TrustedEvent) => {
-    const [_, limit = "10"] = event.content.match(/\/list\s*(\d+)/) || []
+    const [_, limit = '10'] = event.content.match(/\/list\s*(\d+)/) || []
 
     const applications = await database.listApplications(parseInt(limit))
 
@@ -100,25 +146,28 @@ export const robot = {
 
     await publish({
       relays,
+      context,
       event: await appSigner.sign(
         makeEvent(RELAYS, {
-          tags: BOT_RELAYS.map(url => ["r", url]),
+          tags: BOT_RELAYS.map((url) => ['r', url]),
         })
       ),
     })
 
     await publish({
       relays,
+      context,
       event: await appSigner.sign(
-        makeEvent(INBOX_RELAYS, {
-          tags: BOT_DM_RELAYS.map(url => ["relay", url]),
+        makeEvent(MESSAGING_RELAYS, {
+          tags: BOT_DM_RELAYS.map((url) => ['relay', url]),
         })
       ),
     })
 
     await publish({
       relays,
-      event: await appSigner.sign(makeEvent(PROFILE, {content: BOT_META})),
+      context,
+      event: await appSigner.sign(makeEvent(PROFILE, { content: BOT_META })),
     })
   },
   sendToAdmin: async (content: string) => {
@@ -129,20 +178,23 @@ export const robot = {
 
     const template = makeEvent(MESSAGE, { content, tags: [['h', ADMIN_ROOM]] })
     const event = await appSigner.sign(template)
-    const results = await publish({ relays: [ADMIN_RELAY], event })
+    const results = await publish({ relays: [ADMIN_RELAY], context, event })
 
-    return getPublishError(results, `Failed to message to admin`)
+    return getPublishError(results, `Failed to message admin`)
   },
   listenToAdmin: () => {
     console.log(`Listening to messages at ${ADMIN_RELAY}'${ADMIN_ROOM}`)
 
     request({
+      context,
       relays: [ADMIN_RELAY],
       filters: [{ kinds: [MESSAGE], '#h': [ADMIN_ROOM], limit: 0 }],
       onEvent: (event: TrustedEvent) => {
         for (const [command, handler] of Object.entries(commands)) {
           if (event.content.startsWith(command)) {
-            console.log(`Received message from admin: ${event.content.slice(0, 50).replace(/\n/g, '')}`)
+            console.log(
+              `Received message from admin: ${event.content.slice(0, 50).replace(/\n/g, '')}`
+            )
             handler(event)
           }
         }
@@ -158,16 +210,18 @@ export const robot = {
     const nip59 = Nip59.fromSigner(appSigner)
     const template = makeEvent(DIRECT_MESSAGE, { content, tags: [['p', pubkey]] })
     const event = await nip59.wrap(pubkey, template)
-    const results = await publish({ relays, event: event.wrap })
+    const results = await publish({ relays, context, event })
 
     return getPublishError(results, `Failed to send DM to ${pubkey}`)
   },
   loadMessagingRelays: async (pubkey: string) => {
     let relays = ['wss://auth.nostr1.com/', 'wss://inbox.nostr.wine/']
 
-    await load({
+    await request({
+      context,
+      autoClose: true,
       relays: INDEXER_RELAYS,
-      filters: [{ kinds: [INBOX_RELAYS], authors: [pubkey] }],
+      filters: [{ kinds: [MESSAGING_RELAYS], authors: [pubkey] }],
       onEvent: (event: TrustedEvent) => {
         relays = getRelayTagValues(event.tags)
       },

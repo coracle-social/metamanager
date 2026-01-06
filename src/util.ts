@@ -9,7 +9,7 @@ export const slugify = (s: string) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
+    .replace(/^[0-9_]+|_+$/g, '')
 
 export const fromCsv = (s: string) => (s || '').split(',').filter(identity)
 
@@ -43,4 +43,4 @@ export const getPublishError = (results: PublishResultsByRelay, message: string)
 }
 
 export const toTitleCase = (s: string) =>
-  s.replace(/\w\S*/g, text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())
+  s.replace(/\w\S*/g, (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())
