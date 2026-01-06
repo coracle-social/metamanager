@@ -104,7 +104,7 @@ const approveApplication = instrument(
 
     // Configure relay
 
-    const host = application.schema + '.' + RELAY_DOMAIN
+    const host = application.schema.replace('_', '-') + '.' + RELAY_DOMAIN
     const config = await render('templates/config.toml', {
       Host: host,
       Secret: makeSecret(),
