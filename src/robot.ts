@@ -139,7 +139,7 @@ const commands = {
     }
   },
   '/assign': async (event: TrustedEvent) => {
-    const [_, schema, target] = event.content.match(/\/assign (\w+) (\w+)/) || []
+    const [_, schema, target] = event.content.match(/\/assign (\w+) ([\w:]+)/) || []
 
     const pubkey = tryCatch(() => {
       const entity = fromNostrURI(target)
