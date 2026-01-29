@@ -134,6 +134,15 @@ const createApplication = instrument(
   }
 )
 
+const assignApplication = instrument(
+  'database.assignApplication',
+  async (schema: string, pubkey: string) => {
+    const application = await getApplication(schema)
+    await run(`UPDATE application SET pubkey = ? WHERE schema = ?`, [pubkey, schema])
+    return application
+  }
+)
+
 const approveApplication = instrument(
   'database.approveApplication',
   async ({ schema, message }: ApplicationApprovalParams) => {
@@ -176,6 +185,7 @@ export const database = {
   migrate,
   getApplication,
   createApplication,
+  assignApplication,
   approveApplication,
   rejectApplication,
   deleteApplication,

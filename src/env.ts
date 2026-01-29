@@ -1,9 +1,7 @@
 import { config } from 'dotenv'
 import { Nip01Signer } from '@welshman/signer'
 import { parseJson } from '@welshman/lib'
-import type { StampedEvent } from '@welshman/util'
 import { normalizeRelayUrl } from '@welshman/util'
-import type { Socket } from '@welshman/net'
 import { fromCsv } from './util.js'
 
 // Load .env.template first for defaults, then .env for overrides

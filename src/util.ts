@@ -1,6 +1,10 @@
 import { identity } from '@welshman/lib'
 import { PublishResultsByRelay, PublishStatus } from '@welshman/net'
 import { displayRelayUrl } from '@welshman/util'
+import { readFile, writeFile } from 'fs/promises'
+import { join } from 'path'
+import * as TOML from '@iarna/toml'
+import { CONFIG_DIR } from './env.js'
 
 export const slugify = (s: string) =>
   s
@@ -44,3 +48,27 @@ export const getPublishError = (results: PublishResultsByRelay, message: string)
 
 export const toTitleCase = (s: string) =>
   s.replace(/\w\S*/g, (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())
+
+export const editConfigFile = async (schema: string, updates: Record<string, any>) => {
+  const configPath = join(CONFIG_DIR, `${schema}.toml`)
+  const content = await readFile(configPath, 'utf-8')
+  const config = TOML.parse(content) as any
+
+  // Support nested paths like "info.pubkey"
+  for (const [key, value] of Object.entries(updates)) {
+    const path = key.split('.')
+    let target = config
+
+    for (let i = 0; i < path.length - 1; i++) {
+      if (!target[path[i]]) {
+        target[path[i]] = {}
+      }
+      target = target[path[i]]
+    }
+
+    target[path[path.length - 1]] = value
+  }
+
+  const updatedContent = TOML.stringify(config)
+  await writeFile(configPath, updatedContent, 'utf-8')
+}

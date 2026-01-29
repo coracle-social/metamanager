@@ -27,6 +27,7 @@
   "dependencies": {
     "@getalby/lightning-tools": "^6.0.0",
     "@getalby/sdk": "^7.0.0",
+    "@iarna/toml": "^2.2.5",
     "@types/node": "^22.18.1",
     "@welshman/lib": "^0.7.1",
     "@welshman/net": "^0.7.1",

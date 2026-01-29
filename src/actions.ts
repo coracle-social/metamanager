@@ -1,7 +1,13 @@
 import * as nip19 from 'nostr-tools/nip19'
 import { randomId } from '@welshman/lib'
 import type { StampedEvent } from '@welshman/util'
-import { makeSecret, makeEvent, ROOM_CREATE, ROOM_EDIT_META, normalizeRelayUrl } from '@welshman/util'
+import {
+  makeSecret,
+  makeEvent,
+  ROOM_CREATE,
+  ROOM_EDIT_META,
+  normalizeRelayUrl,
+} from '@welshman/util'
 import { defaultSocketPolicies, makeSocketPolicyAuth, Socket, Pool } from '@welshman/net'
 import { Nip01Signer } from '@welshman/signer'
 import { publish } from '@welshman/net'
@@ -19,7 +25,7 @@ import {
   SATS_PER_MONTH,
   TRIAL_DAYS,
 } from './env.js'
-import { slugify } from './util.js'
+import { slugify, editConfigFile } from './util.js'
 import { getMetadata } from './domain.js'
 import type {
   Application,
@@ -106,6 +112,21 @@ const createApplication = instrument(
       await approveApplication({ schema: application.schema, message: '' })
 
       console.log(`Automatically approved application ${application.schema}`)
+    }
+  }
+)
+
+const assignApplication = instrument(
+  'actions.assignApplication',
+  async (schema: string, pubkey: string) => {
+    const application = await database.assignApplication(schema, pubkey)
+
+    if (application) {
+      await editConfigFile(application.schema, { 'info.pubkey': pubkey })
+
+      console.log(`Assigned application ${application.schema} to ${pubkey}`)
+    } else {
+      console.log(`Application not found: ${schema}`)
     }
   }
 )
@@ -241,6 +262,7 @@ const deleteApplication = instrument('actions.deleteApplication', async (schema:
 
 export const actions = {
   createApplication,
+  assignApplication,
   approveApplication,
   rejectApplication,
   deleteApplication,

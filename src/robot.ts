@@ -1,4 +1,4 @@
-import { formatTimestamp, uniq, sleep } from '@welshman/lib'
+import { formatTimestamp, uniq, sleep, tryCatch } from '@welshman/lib'
 import type { TrustedEvent, StampedEvent } from '@welshman/util'
 import {
   DIRECT_MESSAGE,
@@ -8,7 +8,6 @@ import {
   PROFILE,
   makeEvent,
   getRelayTagValues,
-  normalizeRelayUrl,
 } from '@welshman/util'
 import {
   request,
@@ -136,6 +135,39 @@ const commands = {
       robot.sendToAdmin(`Successfully deleted application ${schema}`)
     } else {
       robot.sendToAdmin(`Invalid application id: ${schema}`)
+    }
+  },
+  '/assign': async (event: TrustedEvent) => {
+    const [_, schema, entity] = event.content.match(/\/assign (\w+) (\w+)/) || []
+
+    const pubkey = tryCatch(() => {
+      if (entity.match(/^[0-9a-f]{64}$/)) {
+        return entity
+      } else {
+        const { type, data } = nip19.decode(entity) as any
+
+        if (type === 'npub') {
+          return data
+        }
+
+        if (type === 'nprofile') {
+          return data.pubkey
+        }
+      }
+    })
+
+    if (!pubkey) {
+      robot.sendToAdmin(`Invalid pubkey: ${entity}`)
+    } else {
+      const application = await database.getApplication(schema)
+
+      if (application) {
+        await actions.assignApplication(schema, pubkey)
+
+        robot.sendToAdmin(`Successfully assigned application ${schema} to ${entity}`)
+      } else {
+        robot.sendToAdmin(`Invalid application id: ${schema}`)
+      }
     }
   },
 }
