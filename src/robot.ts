@@ -7,6 +7,7 @@ import {
   RELAYS,
   PROFILE,
   makeEvent,
+  fromNostrURI,
   getRelayTagValues,
 } from '@welshman/util'
 import {
@@ -138,9 +139,11 @@ const commands = {
     }
   },
   '/assign': async (event: TrustedEvent) => {
-    const [_, schema, entity] = event.content.match(/\/assign (\w+) (\w+)/) || []
+    const [_, schema, target] = event.content.match(/\/assign (\w+) (\w+)/) || []
 
     const pubkey = tryCatch(() => {
+      const entity = fromNostrURI(target)
+
       if (entity.match(/^[0-9a-f]{64}$/)) {
         return entity
       } else {
@@ -157,14 +160,14 @@ const commands = {
     })
 
     if (!pubkey) {
-      robot.sendToAdmin(`Invalid pubkey: ${entity}`)
+      robot.sendToAdmin(`Invalid pubkey: ${target}`)
     } else {
       const application = await database.getApplication(schema)
 
       if (application) {
         await actions.assignApplication(schema, pubkey)
 
-        robot.sendToAdmin(`Successfully assigned application ${schema} to ${entity}`)
+        robot.sendToAdmin(`Successfully assigned application ${schema} to ${target}`)
       } else {
         robot.sendToAdmin(`Invalid application id: ${schema}`)
       }
