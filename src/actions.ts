@@ -110,8 +110,6 @@ const createApplication = instrument(
 
     if (!REQUIRE_APPROVAL) {
       await approveApplication({ schema: application.schema, message: '' })
-
-      console.log(`Automatically approved application ${application.schema}`)
     }
   }
 )
@@ -134,9 +132,13 @@ const assignApplication = instrument(
 const approveApplication = instrument(
   'actions.approveApplication',
   async (params: ApplicationApprovalParams) => {
+    console.log(`Approving application ${params.schema}`)
+
     const application = await database.approveApplication(params)
 
     // Configure relay
+
+    console.log(`Configuring relay ${application.schema}`)
 
     const secret = makeSecret()
     const host = application.schema.replace('_', '-') + '.' + RELAY_DOMAIN
@@ -155,11 +157,15 @@ const approveApplication = instrument(
 
     // Notify organizer
 
+    console.log(`Notifying relay ${application.schema} owner of approval`)
+
     const content = await render('templates/approved.txt', { Host: host, Message: params.message })
     const relays = await robot.loadMessagingRelays(application.pubkey)
     const error = await robot.sendDirectMessage(application.pubkey, content, relays)
 
     if (error) {
+      console.log(`Failed to notify relay ${application.schema} owner of approval:`, error)
+
       const adminError = await robot.sendToAdmin(error)
 
       if (adminError) {
