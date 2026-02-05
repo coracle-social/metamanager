@@ -256,6 +256,7 @@ export const robot = {
       context,
       autoClose: true,
       relays: INDEXER_RELAYS,
+      signal: AbortSignal.timeout(5000),
       filters: [{ kinds: [MESSAGING_RELAYS], authors: [pubkey] }],
       onEvent: (event: TrustedEvent) => {
         relays = getRelayTagValues(event.tags)
