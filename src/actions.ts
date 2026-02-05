@@ -157,10 +157,13 @@ const approveApplication = instrument(
 
     // Notify organizer
 
-    console.log(`Notifying relay ${application.schema} owner of approval`)
+    console.log(`Loading relays for ${application.pubkey}`)
+
+    const relays = await robot.loadMessagingRelays(application.pubkey)
+
+    console.log(`Notifying relay ${application.schema} owner of approval`, relays)
 
     const content = await render('templates/approved.txt', { Host: host, Message: params.message })
-    const relays = await robot.loadMessagingRelays(application.pubkey)
     const error = await robot.sendDirectMessage(application.pubkey, content, relays)
 
     if (error) {
