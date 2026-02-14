@@ -12,20 +12,17 @@ import { defaultSocketPolicies, makeSocketPolicyAuth, Socket, Pool } from '@wels
 import { Nip01Signer } from '@welshman/signer'
 import { publish } from '@welshman/net'
 import { instrument } from 'succinct-async'
-import { writeFile, unlink } from 'fs/promises'
-import { join } from 'path'
 import { NWCClient } from '@getalby/sdk/nwc'
 import { Invoice } from '@getalby/lightning-tools/bolt11'
 import {
   ADMIN_PUBKEYS,
   REQUIRE_APPROVAL,
-  CONFIG_DIR,
   RELAY_DOMAIN,
   NWC_URL,
   SATS_PER_MONTH,
   TRIAL_DAYS,
 } from './env.js'
-import { slugify, editConfigFile } from './util.js'
+import { slugify, apiRequest } from './util.js'
 import { getMetadata } from './domain.js'
 import type {
   Application,
@@ -120,9 +117,15 @@ const assignApplication = instrument(
     const application = await database.assignApplication(schema, pubkey)
 
     if (application) {
-      await editConfigFile(application.schema, { 'info.pubkey': pubkey })
+      const result = await apiRequest('PATCH', `/relay/${application.schema}`, {
+        info: { pubkey },
+      })
 
-      console.log(`Assigned application ${application.schema} to ${pubkey}`)
+      if (result.success) {
+        console.log(`Assigned application ${application.schema} to ${pubkey}`)
+      } else {
+        console.error(`Failed to assign application ${application.schema}: ${result.error}`)
+      }
     } else {
       console.log(`Application not found: ${schema}`)
     }
@@ -142,18 +145,36 @@ const approveApplication = instrument(
 
     const secret = makeSecret()
     const host = application.schema.replace('_', '-') + '.' + RELAY_DOMAIN
-    const config = await render('templates/config.toml', {
-      Host: host,
-      Secret: secret,
-      Schema: application.schema,
-      Name: application.name,
-      Image: application.image || '',
-      Description: application.description,
-      AdminPubkeys: JSON.stringify(ADMIN_PUBKEYS),
-      Pubkey: application.pubkey,
+    const result = await apiRequest('POST', `/relay/${application.schema}`, {
+      host,
+      schema: application.schema,
+      secret,
+      info: {
+        name: application.name,
+        icon: application.image || '',
+        pubkey: application.pubkey,
+        description: application.description,
+      },
+      groups: {
+        enabled: true,
+      },
+      management: {
+        enabled: true,
+      },
+      push: {
+        enabled: true,
+      },
+      roles: {
+        admin: {
+          pubkeys: ADMIN_PUBKEYS,
+          can_manage: true,
+        },
+      },
     })
 
-    await writeFile(join(CONFIG_DIR, `${application.schema}.toml`), config, 'utf-8')
+    if (!result.success) {
+      throw new Error(`Failed to create relay: ${result.error}`)
+    }
 
     // Notify organizer
 
@@ -253,14 +274,13 @@ const deleteApplication = instrument('actions.deleteApplication', async (schema:
   const application = await database.deleteApplication(schema)
 
   if (application) {
-    // Delete config file if it exists
-    try {
-      await unlink(join(CONFIG_DIR, `${application.schema}.toml`))
-      console.log(`Deleted config file for ${application.schema}`)
-    } catch (err: any) {
-      if (err.code !== 'ENOENT') {
-        console.error(`Failed to delete config file for ${application.schema}:`, err)
-      }
+    // Delete relay via API
+    const result = await apiRequest('DELETE', `/relay/${application.schema}`)
+
+    if (result.success) {
+      console.log(`Deleted relay config for ${application.schema}`)
+    } else {
+      console.error(`Failed to delete relay config for ${application.schema}: ${result.error}`)
     }
 
     console.log(`Deleted application ${application.schema}`)

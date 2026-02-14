@@ -9,7 +9,7 @@ config({ path: '.env.template' })
 config({ path: '.env', override: true })
 
 if (!process.env.PORT) throw new Error('PORT is not defined.')
-if (!process.env.CONFIG_DIR) throw new Error('CONFIG_DIR is not defined.')
+if (!process.env.RELAY_API) throw new Error('RELAY_API is not defined.')
 if (!process.env.DATABASE_PATH) throw new Error('DATABASE_PATH is not defined.')
 if (!process.env.SECRET_KEY) throw new Error('SECRET_KEY is not defined.')
 if (!process.env.ADMIN_ROOM) throw new Error('ADMIN_ROOM is not defined.')
@@ -25,7 +25,7 @@ export const PORT = process.env.PORT
 export const NWC_URL = process.env.NWC_URL || ''
 export const SATS_PER_MONTH = parseInt(process.env.SATS_PER_MONTH || '0')
 export const TRIAL_DAYS = parseInt(process.env.TRIAL_DAYS || '0')
-export const CONFIG_DIR = process.env.CONFIG_DIR
+export const RELAY_API = process.env.RELAY_API.replace(/\/$/, '')
 export const DATABASE_PATH = process.env.DATABASE_PATH
 export const ADMIN_ROOM = process.env.ADMIN_ROOM
 export const ADMIN_RELAY = normalizeRelayUrl(process.env.ADMIN_RELAY)

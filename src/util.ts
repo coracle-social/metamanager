@@ -1,10 +1,7 @@
 import { identity } from '@welshman/lib'
 import { PublishResultsByRelay, PublishStatus } from '@welshman/net'
-import { displayRelayUrl } from '@welshman/util'
-import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
-import * as TOML from '@iarna/toml'
-import { CONFIG_DIR } from './env.js'
+import { displayRelayUrl, makeHttpAuth, makeHttpAuthHeader } from '@welshman/util'
+import { RELAY_API, appSigner } from './env.js'
 
 export const slugify = (s: string) =>
   s
@@ -49,26 +46,36 @@ export const getPublishError = (results: PublishResultsByRelay, message: string)
 export const toTitleCase = (s: string) =>
   s.replace(/\w\S*/g, (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase())
 
-export const editConfigFile = async (schema: string, updates: Record<string, any>) => {
-  const configPath = join(CONFIG_DIR, `${schema}.toml`)
-  const content = await readFile(configPath, 'utf-8')
-  const config = TOML.parse(content) as any
+// Helper to make NIP 98 authenticated API requests
+export const apiRequest = async (
+  method: string,
+  endpoint: string,
+  body?: object
+): Promise<{ success: boolean; error?: string }> => {
+  const url = `${RELAY_API}${endpoint}`
+  const payload = body ? JSON.stringify(body) : undefined
+  const authEventTemplate = await makeHttpAuth(url, method, payload)
+  const signedAuthEvent = await appSigner.sign(authEventTemplate)
+  const authHeader = makeHttpAuthHeader(signedAuthEvent)
 
-  // Support nested paths like "info.pubkey"
-  for (const [key, value] of Object.entries(updates)) {
-    const path = key.split('.')
-    let target = config
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: payload,
+    })
 
-    for (let i = 0; i < path.length - 1; i++) {
-      if (!target[path[i]]) {
-        target[path[i]] = {}
-      }
-      target = target[path[i]]
+    const data = await response.json().catch(() => null)
+
+    if (data?.error) {
+      return { success: false, error: data.error || `API error (${response.status})` }
     }
 
-    target[path[path.length - 1]] = value
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: `Request failed: ${error.message}` }
   }
-
-  const updatedContent = TOML.stringify(config)
-  await writeFile(configPath, updatedContent, 'utf-8')
 }
