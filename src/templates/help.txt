@@ -1,4 +1,5 @@
 - `/help` - display this message
+- `/add [name]` - create a space (assigned to admin by default)
 - `/list [optional limit]` - lists `limit` most recent applications
 - `/info [id]` - displays information for the given application
 - `/reject [id] [optional message]` - reject an application with an optional message to the applicant.

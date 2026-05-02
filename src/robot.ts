@@ -22,6 +22,7 @@ import { Nip59 } from '@welshman/signer'
 import * as nip19 from 'nostr-tools/nip19'
 import { actions } from './actions.js'
 import { getMetadata } from './domain.js'
+import { slugify } from './util.js'
 import { database } from './database.js'
 import { render } from './templates.js'
 import {
@@ -136,6 +137,32 @@ const commands = {
       robot.sendToAdmin(`Successfully deleted application ${schema}`)
     } else {
       robot.sendToAdmin(`Invalid application id: ${schema}`)
+    }
+  },
+  '/add': async (event: TrustedEvent) => {
+    const [_, name] = event.content.match(/\/add (.+)/) || []
+
+    if (!name) {
+      robot.sendToAdmin('Usage: /add <name>')
+      return
+    }
+
+    const schema = slugify(name)
+    const error = await actions.createApplication(
+      {
+        name,
+        schema,
+        pubkey: event.pubkey,
+        description: `${name} is a community space.`,
+        metadata: {},
+      },
+      true
+    )
+
+    if (error) {
+      robot.sendToAdmin(`Failed to create application: ${error}`)
+    } else {
+      robot.sendToAdmin(`Successfully created application ${schema}`)
     }
   },
   '/assign': async (event: TrustedEvent) => {

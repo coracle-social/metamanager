@@ -45,7 +45,7 @@ export class ActionError extends Error {
 
 const createApplication = instrument(
   'actions.createApplication',
-  async (params: Partial<ApplicationParams>) => {
+  async (params: Partial<ApplicationParams>, autoApprove = false) => {
     if (!params.name) return 'A name for your space is required'
     if (!params.schema) return 'A schema name is required'
     if (params.schema.match(/^[0-9]/)) return 'Schema must not begin with a number'
@@ -108,7 +108,7 @@ const createApplication = instrument(
       console.log(`Created application ${application.schema}`)
     }
 
-    if (!REQUIRE_APPROVAL) {
+    if (!REQUIRE_APPROVAL || autoApprove) {
       await approveApplication({ schema: application.schema, message: '' })
 
       console.log(`Automatically approved application ${application.schema}`)
