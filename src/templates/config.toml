@@ -17,6 +17,9 @@ enabled = true
 [blossom]
 enabled = true
 
+[push]
+enabled = true
+
 [roles.member]
 can_invite = true
 
