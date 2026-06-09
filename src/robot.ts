@@ -200,6 +200,25 @@ const commands = {
       }
     }
   },
+  '/groups': async (event: TrustedEvent) => {
+    const [_, op, schema] = event.content.match(/\/groups (enable|disable) (\w+)/) || []
+
+    if (!op || !schema) {
+      robot.sendToAdmin('Usage: /groups enable|disable <id>')
+      return
+    }
+
+    const application = await database.getApplication(schema)
+
+    if (application?.approved_at) {
+      await actions.setGroupsEnabled(schema, op === 'enable')
+      robot.sendToAdmin(`Successfully ${op}d groups for ${schema}`)
+    } else if (application) {
+      robot.sendToAdmin(`Application ${schema} has not been approved yet`)
+    } else {
+      robot.sendToAdmin(`Invalid application id: ${schema}`)
+    }
+  },
   '/admin': async (event: TrustedEvent) => {
     const [_, op, schema, target] = event.content.match(/\/admin (add|remove) (\w+) ([\w:]+)/) || []
 

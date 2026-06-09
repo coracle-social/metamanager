@@ -284,6 +284,14 @@ const removeAdmin = instrument('actions.removeAdmin', async (schema: string, pub
   console.log(`Removed admin ${pubkey} from ${schema}`)
 })
 
+const setGroupsEnabled = instrument(
+  'actions.setGroupsEnabled',
+  async (schema: string, enabled: boolean) => {
+    await editConfigFile(schema, { 'groups.enabled': enabled })
+    console.log(`Set groups.enabled=${enabled} for ${schema}`)
+  }
+)
+
 export const actions = {
   createApplication,
   assignApplication,
@@ -292,4 +300,5 @@ export const actions = {
   deleteApplication,
   addAdmin,
   removeAdmin,
+  setGroupsEnabled,
 }
