@@ -41,11 +41,5 @@
     "nostr-tools": "^2.16.2",
     "sqlite3": "^5.1.7",
     "succinct-async": "^1.0.4"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "bcrypt",
-      "sqlite3"
-    ]
   }
 }
