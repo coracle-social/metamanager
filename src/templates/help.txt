@@ -5,4 +5,6 @@
 - `/reject [id] [optional message]` - reject an application with an optional message to the applicant.
 - `/approve [id] [optional message]` - approve an application with an optional message to the applicant.
 - `/assign [id] [pubkey]` - sets the relay's `pubkey` field to the given pubkey making them the owner.
+- `/admin add [id] [pubkey]` - adds a pubkey to the relay's admin list.
+- `/admin remove [id] [pubkey]` - removes a pubkey from the relay's admin list.
 - `/delete [id]` - deletes the given application and deactivates the corresponding relay.

@@ -12,8 +12,9 @@ import { defaultSocketPolicies, makeSocketPolicyAuth, Socket, Pool } from '@wels
 import { Nip01Signer } from '@welshman/signer'
 import { publish } from '@welshman/net'
 import { instrument } from 'succinct-async'
-import { writeFile, unlink } from 'fs/promises'
+import { readFile, writeFile, unlink } from 'fs/promises'
 import { join } from 'path'
+import * as TOML from '@iarna/toml'
 import { NWCClient } from '@getalby/sdk/nwc'
 import { Invoice } from '@getalby/lightning-tools/bolt11'
 import {
@@ -260,10 +261,35 @@ const deleteApplication = instrument('actions.deleteApplication', async (schema:
   }
 })
 
+const readAdminPubkeys = async (schema: string): Promise<string[]> => {
+  const configPath = join(CONFIG_DIR, `${schema}.toml`)
+  const content = await readFile(configPath, 'utf-8')
+  const config = TOML.parse(content) as any
+  return config.roles?.admin?.pubkeys || []
+}
+
+const addAdmin = instrument('actions.addAdmin', async (schema: string, pubkey: string) => {
+  const pubkeys = await readAdminPubkeys(schema)
+
+  if (!pubkeys.includes(pubkey)) {
+    await editConfigFile(schema, { 'roles.admin.pubkeys': [...pubkeys, pubkey] })
+    console.log(`Added admin ${pubkey} to ${schema}`)
+  }
+})
+
+const removeAdmin = instrument('actions.removeAdmin', async (schema: string, pubkey: string) => {
+  const pubkeys = await readAdminPubkeys(schema)
+
+  await editConfigFile(schema, { 'roles.admin.pubkeys': pubkeys.filter((k) => k !== pubkey) })
+  console.log(`Removed admin ${pubkey} from ${schema}`)
+})
+
 export const actions = {
   createApplication,
   assignApplication,
   approveApplication,
   rejectApplication,
   deleteApplication,
+  addAdmin,
+  removeAdmin,
 }

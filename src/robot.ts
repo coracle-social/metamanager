@@ -200,6 +200,47 @@ const commands = {
       }
     }
   },
+  '/admin': async (event: TrustedEvent) => {
+    const [_, op, schema, target] = event.content.match(/\/admin (add|remove) (\w+) ([\w:]+)/) || []
+
+    const pubkey = tryCatch(() => {
+      const entity = fromNostrURI(target)
+
+      if (entity.match(/^[0-9a-f]{64}$/)) {
+        return entity
+      } else {
+        const { type, data } = nip19.decode(entity) as any
+
+        if (type === 'npub') {
+          return data
+        }
+
+        if (type === 'nprofile') {
+          return data.pubkey
+        }
+      }
+    })
+
+    if (!pubkey) {
+      robot.sendToAdmin(`Invalid pubkey: ${target}`)
+    } else {
+      const application = await database.getApplication(schema)
+
+      if (application?.approved_at) {
+        if (op === 'add') {
+          await actions.addAdmin(schema, pubkey)
+          robot.sendToAdmin(`Successfully added admin ${target} to ${schema}`)
+        } else {
+          await actions.removeAdmin(schema, pubkey)
+          robot.sendToAdmin(`Successfully removed admin ${target} from ${schema}`)
+        }
+      } else if (application) {
+        robot.sendToAdmin(`Application ${schema} has not been approved yet`)
+      } else {
+        robot.sendToAdmin(`Invalid application id: ${schema}`)
+      }
+    }
+  },
 }
 
 export const robot = {
