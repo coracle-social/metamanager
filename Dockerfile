@@ -27,6 +27,10 @@ ENV DATABASE_PATH=/app/data/database.db
 VOLUME /app/config
 VOLUME /app/data
 
+# Make ownership match the non-root user the container runs as
+RUN chown -R node:node /app
+USER node
+
 # Expose the port
 EXPOSE 7532
 
