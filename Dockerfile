@@ -31,4 +31,4 @@ VOLUME /app/data
 EXPOSE 7532
 
 # Start the application
-CMD ["pnpm", "start"]
+CMD ["node", "dist/index.js"]
